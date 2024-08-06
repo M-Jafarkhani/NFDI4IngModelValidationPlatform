@@ -1,0 +1,26 @@
+version: 2
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+# Set the version of Python and other tools you might need
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-latest"
+
+conda:
+  environment: environment_docs.yml
+
+mkdocs:
+  configuration: mkdocs.yml
+
+
+plugins:
+  - search
+
+markdown_extensions:
+  - markdown_include.include:
+      base_path: .
+  - admonition

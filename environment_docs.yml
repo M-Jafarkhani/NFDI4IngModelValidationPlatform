@@ -1,0 +1,7 @@
+name: model-validation-platform-docs
+channels:
+  - conda-forge
+dependencies:
+  - mkdocs
+
+
