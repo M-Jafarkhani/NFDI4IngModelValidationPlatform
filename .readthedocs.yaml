@@ -1,8 +1,5 @@
 version: 2
 
-theme:
-  name: readthedocs
-  highlightjs: true
 
 # Set the version of Python and other tools you might need
 build:
