@@ -1,1 +1,5 @@
 site_name: NFDI4Ing Model Validation Platform
+
+theme:
+  name: readthedocs
+  highlightjs: true
