@@ -3,3 +3,11 @@ site_name: NFDI4Ing Model Validation Platform
 theme:
   name: readthedocs
   highlightjs: true
+
+plugins:
+  - search
+
+markdown_extensions:
+#  - markdown_include.include:
+#      base_path: .
+  - admonition
