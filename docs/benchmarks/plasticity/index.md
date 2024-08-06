@@ -3,6 +3,7 @@
 A general plasticity model can be described by the following set of equations which are here taken from the Simo and Hughes book on computational inelasticity [@Simo1998](p. 83, BOX 2.1):
 
 !!! note "General plasticity model[@Simo1998](p. 83, BOX 2.1)"
+
     1. Elastic stress-strain relationship:
     $$
     \boldsymbol{\sigma} = \mathbf C : (\boldsymbol{\varepsilon}-\boldsymbol{\varepsilon}_\mathrm{pl})

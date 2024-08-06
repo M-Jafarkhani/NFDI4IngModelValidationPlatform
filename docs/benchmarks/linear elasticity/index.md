@@ -2,6 +2,7 @@
 
 A general non-isotropic linear elastic material model consists of the follwoing equations:
 !!! note "Linear elasticity equations"
+
     $$
     \begin{aligned}
     \boldsymbol{\varepsilon} &= \frac{1}{2}\left(\nabla \mathbf u +\nabla \mathbf u^\top\right)\\
@@ -10,6 +11,7 @@ A general non-isotropic linear elastic material model consists of the follwoing 
     $$
 
 !!! note "Linear elasticity equations -- incremental form"
+
     $$
     \begin{aligned}
     \Delta\boldsymbol{\varepsilon} &= \frac{1}{2}\left(\nabla \Delta\mathbf u +\nabla \Delta\mathbf u^\top\right)\\
