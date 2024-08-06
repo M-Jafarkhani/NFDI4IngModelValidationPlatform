@@ -1,0 +1,1 @@
+# Mises plasticity with linear isotropic hardening
