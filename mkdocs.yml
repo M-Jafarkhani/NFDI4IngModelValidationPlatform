@@ -1,6 +1,7 @@
 site_name: NFDI4Ing Model Validation Platform
 
 repo_url: https://github.com/BAMresearch/NFDI4IngModelValidationPlatform
+edit_uri: blob/main/docs/
 
 theme:
   name: readthedocs
