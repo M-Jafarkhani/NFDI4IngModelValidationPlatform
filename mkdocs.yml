@@ -5,6 +5,8 @@ repo_url: https://github.com/BAMresearch/NFDI4IngModelValidationPlatform
 theme:
   name: readthedocs
   highlightjs: true
+  icon:
+    repo: fontawesome/brands/github
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML
