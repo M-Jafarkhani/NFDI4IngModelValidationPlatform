@@ -16,11 +16,28 @@ plugins:
   - search
   - bibtex:
       bib_file: "docs/literature.bib"
+  - include_dir_to_nav:
+      recurse: false
+      file_pattern: '.*\.(md|ipynb)$'
+  - mkdocs-jupyter:
+      execute: true
+      include_source: True
 
 markdown_extensions:
-#  - markdown_include.include:
-#      base_path: .
   - admonition
   - footnotes
   - mdx_math:
       enable_dollar_delimiter: true
+  - pymdownx.tasklist:
+  #    custom_checkbox: true
+  #- markdown_checklist.extension
+
+nav:
+  - index.md
+  - conventions.md
+  - Benchmarks:
+     - Introduction: "benchmarks/index.md"
+     - Linear Elasticity: "benchmarks/linear elasticity"
+     - Plasticity: benchmarks/plasticity
+  - "bibliography.md"
+

@@ -5,5 +5,10 @@ dependencies:
   - mkdocs
   - mkdocs-bibtex
   - python-markdown-math
+  - mkdocs-jupyter
+  #- markdown-checklist
+  - pymdown-extensions
+  - pip:
+    - mkdocs-include-dir-to-nav
 
 

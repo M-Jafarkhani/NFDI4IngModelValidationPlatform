@@ -12,3 +12,8 @@
 * [ ] What is a good result?
     * Should we always do mesh-convergence? Cauchy series, if analytical solution is not known?
 * [ ] Which element types? Linear, quadratic? underintegrated? 
+* [ ] What is a sufficient format do describe an algorithm? 
+    * Are algorithm boxes with noting more complicated than a matrix-vector product enough?
+    * Do we always need a reference implementation?
+* [x] Is it _easy_ to link a umat/usermat?
+    * We think so. Both Abaqus and Ansys can link dynamically at runtime. You can also compile a new `ansys.exe`, but it is not required and mainly recommended for shipping the model.   
