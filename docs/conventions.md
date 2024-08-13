@@ -14,7 +14,7 @@ $$
 is defined as 
 
 $$
-\nabla \phi = \mathbf A = [a_{ij}],\text{ with }a_{ij} = \frac{\partial\phi_i}{\partial x_j}.
+\nabla \phi = \frac{\partial\phi_i}{\partial x_j}\mathbf e_i\otimes\mathbf e_j.
 $$
 
 !!! note
