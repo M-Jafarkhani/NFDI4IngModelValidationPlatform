@@ -35,6 +35,7 @@ markdown_extensions:
 nav:
   - index.md
   - conventions.md
+  - data.md
   - interface.md
   - Benchmarks:
      - Introduction: "benchmarks/index.md"

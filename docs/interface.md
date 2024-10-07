@@ -142,3 +142,5 @@ pub extern "C" fn umat(
     // implementation
 }
 ```
+
+In order to convert between interfaces, one could write $2^n$ conversion wrappers ($n$ the number of coverred Interfaces) or alternatively, all conversions go through the generalized interface. This would be easiest to implement, but could potentially be slower due to several conversions in the stresses, tangents, etc. However, using macros and const functionalities to generate conversion tables, factors, and so on, could potentially make this more efficient.
