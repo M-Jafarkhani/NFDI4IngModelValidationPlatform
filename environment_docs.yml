@@ -8,6 +8,8 @@ dependencies:
   - mkdocs-jupyter
   #- markdown-checklist
   - pymdown-extensions
+  - sympy
+  - pip
   - pip:
     - mkdocs-include-dir-to-nav
 
