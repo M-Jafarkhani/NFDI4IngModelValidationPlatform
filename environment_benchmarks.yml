@@ -1,0 +1,9 @@
+name: model-validation
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - snakemake
+  - conda-lock
+  - conda

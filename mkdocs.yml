@@ -1,8 +1,13 @@
 site_name: NFDI4Ing Model Validation Platform
 
+repo_url: https://github.com/BAMresearch/NFDI4IngModelValidationPlatform
+edit_uri: blob/main/docs/
+
 theme:
   name: readthedocs
   highlightjs: true
+  icon:
+    repo: fontawesome/brands/github
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML
@@ -11,11 +16,30 @@ plugins:
   - search
   - bibtex:
       bib_file: "docs/literature.bib"
+  - include_dir_to_nav:
+      recurse: false
+      file_pattern: '.*\.(md|ipynb)$'
+  - mkdocs-jupyter:
+      execute: true
+      include_source: True
 
 markdown_extensions:
-#  - markdown_include.include:
-#      base_path: .
   - admonition
   - footnotes
   - mdx_math:
       enable_dollar_delimiter: true
+  - pymdownx.tasklist:
+  #    custom_checkbox: true
+  #- markdown_checklist.extension
+
+nav:
+  - index.md
+  - conventions.md
+  - data.md
+  - interface.md
+  - Benchmarks:
+     - Introduction: "benchmarks/index.md"
+     - Linear Elasticity: "benchmarks/linear elasticity"
+     - Plasticity: benchmarks/plasticity
+  - "zz_bibliography.md"
+
