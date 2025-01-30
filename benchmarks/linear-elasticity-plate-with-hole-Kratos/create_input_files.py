@@ -329,7 +329,7 @@ project_parameters = {
                 "output_sub_model_parts"             : False,
                 "output_interval"                    : 1,
                 "nodal_solution_step_data_variables" : ["DISPLACEMENT"],
-                "gauss_point_variables_extrapolated_to_nodes" : ["CAUCHY_STRESS_VECTOR"],
+                "gauss_point_variables_extrapolated_to_nodes" : ["CAUCHY_STRESS_VECTOR", "VON_MISES_STRESS"],
             }
         }]
     }

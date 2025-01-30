@@ -5,7 +5,6 @@
       <PDataArray type="Int64" Name="vtkOriginalPointIds" IdType="1" />
       <PDataArray type="UInt8" Name="vtkGhostType" />
       <PDataArray type="Float64" Name="u" NumberOfComponents="3" />
-      <PDataArray type="Float64" Name="stress" NumberOfComponents="9" />
     </PPointData>
     <PCellData>
       <PDataArray type="UInt8" Name="vtkGhostType" />

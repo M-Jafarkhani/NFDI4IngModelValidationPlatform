@@ -228,13 +228,14 @@ def project(
     uh = solver.solve()
     return uh
 
-space_type = "CG" if parameters["element-degree"] > 1 else "DG"
-plot_space = df.fem.functionspace(mesh, (space_type, parameters["element-degree"]-1, (2,2)))
+#space_type = "CG" if parameters["element-degree"] > 1 else "DG"
+plot_space = df.fem.functionspace(mesh, ("DG", parameters["element-degree"]-1, (2,2)))
 
 stress_nodes_red = project(sigma(u), plot_space, dx)
 stress_nodes_red.name = "stress"
-stress_nodes = df.fem.Function(stress_space, name="stress")
-stress_nodes.interpolate(stress_nodes_red)
+#stress_nodes = df.fem.Function(stress_space, name="stress")
+#stress_nodes.interpolate(stress_nodes_red)
 
 with df.io.VTKFile(MPI.COMM_WORLD, f"data/output_{name}.vtk", "w") as vtk:
-    vtk.write_function([u, stress_nodes], 0.0)
+    vtk.write_function([u], 0.0)
+    vtk.write_function([stress_nodes_red], 0.0)

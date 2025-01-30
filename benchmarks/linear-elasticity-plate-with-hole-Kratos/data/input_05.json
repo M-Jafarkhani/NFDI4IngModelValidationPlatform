@@ -132,7 +132,8 @@
                         "DISPLACEMENT"
                     ],
                     "gauss_point_variables_extrapolated_to_nodes": [
-                        "CAUCHY_STRESS_VECTOR"
+                        "CAUCHY_STRESS_VECTOR",
+                        "VON_MISES_STRESS"
                     ]
                 }
             }

@@ -68,22 +68,34 @@ def pyvista_mesh_to_dolfinx(
 
     if data is None:
         return df_mesh
+    is_cell_data = all([data_ in mesh.cell_data.keys() for data_ in data])
 
-    dimensions = np.unique([mesh[data_].shape[1] for data_ in data])
-
-    spaces = {
-        dimension: df.fem.functionspace(df_mesh, ("CG", degree, (dimension,)))
-        for dimension in dimensions
-    }
+    dimensions = []
+    for data_ in data:
+        dim = mesh[data_].shape[1] if len(mesh[data_].shape) > 1 else 1
+        dimensions.append(dim)
+    dimensions = np.unique(dimensions)
+    
+    if is_cell_data:
+        spaces = {
+            dimension: df.fem.functionspace(df_mesh, ("DG", 0, (dimension,)))
+            for dimension in dimensions
+        }
+    else:
+        spaces = {
+            dimension: df.fem.functionspace(df_mesh, ("CG", degree, (dimension,)))
+            for dimension in dimensions
+        }
+    
     functions = {}
     for data_ in data:
-        function_tmp = df.fem.Function(spaces[mesh[data_].shape[1]])
+        dim = mesh[data_].shape[1] if len(mesh[data_].shape) > 1 else 1
+        function_tmp = df.fem.Function(spaces[dim])
         indices_df = np.lexsort(
             [df_mesh.geometry.x[:, i] for i in range(df_mesh.geometry.x.shape[1])]
         )
         indices_pyvista = np.lexsort([points[:, i] for i in range(points.shape[1])])
-        print(len(indices_pyvista), len(indices_df))
-        df_reshaped = function_tmp.x.array.reshape(-1, mesh[data_].shape[1])
-        df_reshaped[indices_df] = mesh[data_][indices_pyvista]
+        df_reshaped = function_tmp.x.array.reshape(-1, dim)
+        df_reshaped[indices_df] = mesh[data_][indices_pyvista].reshape(-1, dim)
         functions[data_] = function_tmp
     return df_mesh, functions
