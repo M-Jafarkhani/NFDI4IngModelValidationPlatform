@@ -20,7 +20,7 @@ plugins:
       recurse: false
       file_pattern: '.*\.(md|ipynb)$'
   - mkdocs-jupyter:
-      execute: true
+      execute: false
       include_source: True
 
 markdown_extensions:
