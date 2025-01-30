@@ -1,0 +1,65 @@
+name: CI
+on:
+  push:
+    branches-ignore:
+
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+  # Runs the workflow once per day at 3:15am
+  schedule:
+    - cron: '3 16 * * *'
+
+env:
+  CACHE_NUMBER: 1  # increase to reset cache manually
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+
+
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: model-validation 
+            use-mamba: true
+
+      - name: Update environment
+        run: mamba env update -n model-validation -f environment_benchmarks.yml
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: run-fenics-benchmarks
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
+          snakemake --use-conda --force
+
+      #- name: run-optimization-workflow
+      #  shell: bash -l {0}
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/usecases/optimization_paper/optimization_workflow/
+      #    snakemake -c 1
+
+      #- name: run-optimization-paper
+      #  shell: bash -l {0}
+      #  run: |
+      #    cd $GITHUB_WORKSPACE/usecases/optimization_paper/
+      #    doit
+
+      #- name: Archive optimization paper pdf
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #      name: optimization_paper
+      #      path: |
+      #        usecases/optimization_paper/tex/optimization_paper.pdf
+      #        usecases/optimization_paper/figures/
+      #        usecases/optimization_paper/optimization_workflow/Results
