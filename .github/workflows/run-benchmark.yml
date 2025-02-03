@@ -71,7 +71,7 @@ jobs:
       - name: Archive kratos data
         uses: actions/upload-artifact@v4
         with:
-            name: fenics-output
+            name: kratos-output
             path: |
               benchmarks/linear-elasticity-plate-with-hole-Kratos/data
               
