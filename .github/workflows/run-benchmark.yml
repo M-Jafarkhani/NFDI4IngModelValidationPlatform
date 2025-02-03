@@ -42,6 +42,12 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
           snakemake --use-conda --force
+      
+      - name: run-Kratos-benchmarks
+        shell: bash -l {0}
+        run: |
+          cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-Kratos/
+          snakemake --use-conda --force
 
       #- name: run-optimization-workflow
       #  shell: bash -l {0}
@@ -55,10 +61,17 @@ jobs:
       #    cd $GITHUB_WORKSPACE/usecases/optimization_paper/
       #    doit
 
-      - name: Archive optimization paper pdf
-        uses: actions/upload-artifact@v3
+      - name: Archive fenics data
+        uses: actions/upload-artifact@v4
         with:
             name: fenics-output
             path: |
               benchmarks/linear-elasticity-plate-with-hole/data
+      
+      - name: Archive kratos data
+        uses: actions/upload-artifact@v4
+        with:
+            name: fenics-output
+            path: |
+              benchmarks/linear-elasticity-plate-with-hole-Kratos/data
               
