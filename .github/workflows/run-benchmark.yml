@@ -41,13 +41,13 @@ jobs:
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole/
-          snakemake --use-conda --force
+          snakemake --use-conda --force --cores 'all'
       
       - name: run-Kratos-benchmarks
         shell: bash -l {0}
         run: |
           cd $GITHUB_WORKSPACE/benchmarks/linear-elasticity-plate-with-hole-Kratos/
-          snakemake --use-conda --force
+          snakemake --use-conda --force --cores 'all'
 
       #- name: run-optimization-workflow
       #  shell: bash -l {0}
