@@ -3,5 +3,6 @@
     "parameters": "parameters_geo1fun2.json",
     "input": "data/input_geo1fun2.json",
     "mesh": "data/mesh_geo1fun2.msh",
-    "output": "data/output_geo1fun2.vtk"
+    "output": "data/output_geo1fun2.vtk",
+    "max_mises_stress": 303258587.515636
 }
