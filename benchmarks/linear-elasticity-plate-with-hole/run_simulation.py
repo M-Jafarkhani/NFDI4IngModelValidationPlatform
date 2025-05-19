@@ -230,12 +230,22 @@ def project(
 
 #space_type = "CG" if parameters["element-degree"] > 1 else "DG"
 plot_space = df.fem.functionspace(mesh, ("DG", parameters["element-degree"]-1, (2,2)))
-
+plot_space_mises = df.fem.functionspace(mesh, ("DG", parameters["element-degree"]-1, (1,)))
 stress_nodes_red = project(sigma(u), plot_space, dx)
 stress_nodes_red.name = "stress"
+
+def mises_stress(u):
+    stress = sigma(u)
+    p = ufl.tr(stress) / 3.0
+    s = stress - p * ufl.Identity(2)
+    return ufl.as_vector([(3.0 / 2.0)**0.5 * (ufl.inner(s, s) + p*p)**0.5,])
+print("mises_stress(u) = ", mises_stress(u).ufl_shape)
+mises_stress_nodes = project(mises_stress(u), plot_space_mises, dx)
+mises_stress_nodes.name = "von_mises_stress"
 #stress_nodes = df.fem.Function(stress_space, name="stress")
 #stress_nodes.interpolate(stress_nodes_red)
 
 with df.io.VTKFile(MPI.COMM_WORLD, f"data/output_{name}.vtk", "w") as vtk:
     vtk.write_function([u], 0.0)
-    vtk.write_function([stress_nodes_red], 0.0)
+    vtk.write_function([stress_nodes_red, mises_stress_nodes
+                        ], 0.0)

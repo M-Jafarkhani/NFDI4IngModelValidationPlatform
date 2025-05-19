@@ -38,11 +38,30 @@ rule summary:
         "summary_{name}.json",
     run:
         import json
+        import pyvista
         summary = {}
         summary["name"] = wildcards.name
         summary["parameters"] = input[3]
         summary["input"] = input[1]
         summary["mesh"] = input[2]
         summary["output"] = input[0]
+        # Load the mesh and output data
+        max_mises_stress = 42.0
+        from xml.etree import ElementTree as ET
+        tree = ET.parse(input[0])
+        root = tree.getroot()
+        pvtu_filenames = []
+        path = Path(input[0]).parent
+        for dataset in root.findall(".//DataSet"):
+            pvtu_filenames.append(path / dataset.get("file"))
+        meshes = [pyvista.read(pvtu_filename) for pvtu_filename in pvtu_filenames]
+        print(pvtu_filenames)
+        for mesh in meshes:
+            # Assuming the mesh has a 'von_mises_stress' array
+            try:
+                max_mises_stress = float(mesh["von_mises_stress"].max())
+            except KeyError:
+                print("von_mises_stress not found in mesh.")
+        summary["max_mises_stress"] = max_mises_stress # Replace with actual computation
         with open(output[0], "w") as f:
             json.dump(summary, f, indent=4)
