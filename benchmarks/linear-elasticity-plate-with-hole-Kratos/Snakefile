@@ -42,11 +42,17 @@ rule summary:
         "summary_{name}.json",
     run:
         import json
+        import pyvista
         summary = {}
         summary["name"] = wildcards.name
         summary["parameters"] = input[3]
         summary["input"] = input[1]
         summary["mesh"] = input[2]
         summary["output"] = input[0]
+        # Load the mesh and output data
+        mesh = pyvista.read(Path(input[0])/ "Structure_0_1.vtk")
+        max_mises_stress = float(mesh["VON_MISES_STRESS"].max())
+        print("Max Mises Stress:", max_mises_stress)
+        summary["max_mises_stress"] = max_mises_stress
         with open(output[0], "w") as f:
             json.dump(summary, f, indent=4)

@@ -5,5 +5,7 @@ channels:
   - defaults
 dependencies:
   - snakemake
+  - pyvista
+  - meshio
   - conda-lock
   - conda
