@@ -97,16 +97,16 @@ process summary {
 workflow {
 
     def ch_parameter_files = Channel.fromPath('parameters_*.json', checkIfExists: true)
-    //ch_parameter_files.view()
+    
 
     def parameters_files = files('parameters_*.json')
     def names = parameters_files.baseName.collect{it.split('_')[1]}
-    //println names
+    
     def ch_file_names = Channel.fromList(names)   
 
     output_gen_input_files = generate_input_files(params.ip_files_script, ch_file_names, ch_parameter_files)
-    //output_gen_input_files.view()
+    
     output_run_sim = run_simulation(params.run_sim_script, output_gen_input_files)
-    //output_run_sim.view()
+    
     summary(output_run_sim)
 }
