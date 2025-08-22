@@ -1,0 +1,74 @@
+import json
+configfile: "workflow_config.json"
+
+result_dir = config["result_dir"]
+configuration_to_parameter_file = config["configuration_to_parameter_file"]
+configurations = config["configurations"]
+tools = config["tools"]
+benchmark = config["benchmark"]
+
+
+rule all:
+    input:
+        expand(f"{result_dir}/{{tool}}/summary.json", tool=tools),
+
+rule create_mesh:    
+    input:
+        script = "create_mesh.py",
+        # the parameters file for the current configuration, this has to be a lambda function since
+        # the wildcard (configuration) has to be evaluated (the dictionary)
+        # otherwise, you could just write configuration_to_parameter_file(configuration)
+        parameters = lambda wildcards: configuration_to_parameter_file[wildcards.configuration],
+    output:
+        mesh = f"{result_dir}/mesh/mesh_{{configuration}}.msh",
+    conda: "environment_mesh.yml"
+    shell:
+        """
+        python3 {input.script} --input_parameter_file {input.parameters} --output_mesh_file {output.mesh}
+        """
+
+# Include tool-specific rules
+# The should have at least the mesh file and the parameters as input
+# and output for each configuration a 
+# solution_metrics_{configuration}.json and 
+# and solution_field_data_{configuration}.zip whee all the visualization files are stored
+# (e.g. vtk)
+for tool in tools:
+    include: f"{tool}/Snakefile"
+
+
+rule summary:
+    input:
+        # the summary is performed for all configurations saved into a single file 
+        # (snakemake_results/linear-elastic-plate-with-hole/fenics/summary.json)
+        parameters = expand("{param}", param=[configuration_to_parameter_file[c] for c in configurations]),
+        mesh = expand(f"{result_dir}/mesh/mesh_{{configuration}}.msh", configuration=configurations),
+        metrics = lambda wildcards: expand(
+            f"{result_dir}/{{tool}}/solution_metrics_{{configuration}}.json",
+            tool=[wildcards.tool], configuration=configurations
+        ),
+        solution_field_data = lambda wildcards: expand(
+            f"{result_dir}/{{tool}}/solution_field_data_{{configuration}}.zip",
+            tool=[wildcards.tool], configuration=configurations
+        ),
+    output:
+        summary_json = f"{result_dir}/{{tool}}/summary.json",
+    conda: "environment_postprocessing.yml",
+    run:
+        import json
+        from pathlib import Path
+
+        all_summaries = []
+        for idx, config in enumerate(configurations):
+            summary = {}
+            summary["benchmark"] = benchmark
+            with open(input.parameters[idx], "r") as param_file:
+                summary["parameters"] = json.load(param_file)
+            summary["mesh"] = f"{config}/mesh"
+            with open(input.metrics[idx], "r") as metrics_file:
+                summary["metrics"] = json.load(metrics_file)
+            summary["configuration"] = config
+            all_summaries.append(summary)
+
+        with open(output.summary_json, "w") as f:
+            json.dump(all_summaries, f, indent=4)
