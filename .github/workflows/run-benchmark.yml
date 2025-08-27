@@ -101,7 +101,7 @@ jobs:
           for f in ./artifact_files/*.zip; do
             unzip -o "$f" -d ./unzipped_files
           done
-          python scripts/process_artifacts.py ./unzipped_files
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
       
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
