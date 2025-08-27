@@ -8,7 +8,6 @@ dependencies:
   - pyvista
   - meshio
   - yaml
-  - re
   - rdflib
   - matplotlib
   - conda-lock
