@@ -1,7 +1,6 @@
 import os
 import argparse
 from rdflib import Graph
-from tabulate import tabulate
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
@@ -102,11 +101,6 @@ def query_and_build_table(graph_list):
     table_data.sort(key=lambda x: x[sort_key])
 
     return headers, table_data
-
-
-def print_table(headers, table_data):
-    """Prints the table using tabulate."""
-    print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 
 def plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf"):
