@@ -12,7 +12,7 @@ class ParameterExtractor(ParameterExtractorInterface):
         file_name = os.path.basename(file_path)
         if (
             file_name.startswith("parameters_")
-            and rule_name == "generate_input_files"
+            and rule_name == "create_mesh"
         ):
             with open(file_path) as f:
                 data = json.load(f)
