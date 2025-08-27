@@ -44,7 +44,7 @@ jobs:
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           python generate_config.py
           snakemake --use-conda --force --cores 'all'
-          snakemake --use-conda --force --cores 'all' --reporter metadata4ing
+          snakemake --use-conda --force --cores 'all' --reporter metadata4ing --report-metadata4ing-paramscript parameter_extractor.py
 
       - name: run-fenics-nextflow-benchmark
         shell: bash -l {0}
