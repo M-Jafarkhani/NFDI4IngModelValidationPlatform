@@ -100,4 +100,12 @@ jobs:
           mkdir -p ./unzipped_files
           for f in ./artifact_files/*.zip; do
             unzip -o "$f" -d ./unzipped_files
-          done             
+          done
+          python scripts/process_artifacts.py ./unzipped_files
+      
+      - name: Upload PDF plot as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-size-vs-stress-plot
+          path: element_size_vs_stress.pdf    
+          
