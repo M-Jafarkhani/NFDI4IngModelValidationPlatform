@@ -11,7 +11,7 @@ class ParameterExtractor(ParameterExtractorInterface):
         results = {}
         file_name = os.path.basename(file_path)
         if (
-            file_name.startswith("summary_1")
+            file_name.startswith("summary")
             and rule_name == "summary"
         ):
             with open(file_path) as f:
