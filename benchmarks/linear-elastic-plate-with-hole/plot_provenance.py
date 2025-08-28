@@ -33,68 +33,53 @@ def query_and_build_table(graph_list):
     PREFIX cr: <http://mlcommons.org/croissant/>
     PREFIX sio: <http://semanticscience.org/resource/>
 
-    SELECT DISTINCT ?tool_name ?value_element_size ?value_young_modulus ?value_poisson_ratio ?value_max_mises_stress
+    SELECT DISTINCT  ?value_element_size  ?value_max_von_mises_stress_gauss_points ?tool_name
     WHERE {
-      ?max_mises_stress cr:source/cr:extract [ cr:jsonPath "/max_mises_stress" ] ;
-                 sio:SIO_000210 [ schema:value ?value_max_mises_stress ] ;
-            cr:source/schema:MediaObject ?media_object_max_mises_stress .
+      ?processing_step_child m4i:investigates ?max_von_mises_stress_gauss_points ;
+            m4i:hasParameter ?element_size ;
+            schema:isPartOf ?processing_step_parent .
+    
+      ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
+            rdfs:label "max_von_mises_stress_nodes" ;
+            schema:value ?value_max_von_mises_stress_gauss_points .
 
-      ?processing_step schema:result ?media_object_max_mises_stress ;
-            schema:object ?media_object_element_size .
-
-      ?poisson_ratio cr:source/cr:extract [ cr:jsonPath "/poisson-ratio/value" ] ;
-                 sio:SIO_000210 [ schema:value ?value_poisson_ratio ] .
-
-      ?young_modulus cr:source/cr:extract [ cr:jsonPath "/young-modulus/value" ] ;
-                 sio:SIO_000210 [ schema:value ?value_young_modulus ] .
-
-      ?field_size cr:source/cr:extract [ cr:jsonPath "/element-size/value" ] ;
-                 sio:SIO_000210 [ schema:value ?value_element_size ] ;
-            cr:source/schema:MediaObject ?media_object_element_size . 
+      ?element_size a schema:PropertyValue ;
+            rdfs:label "element_size" ;
+            schema:value ?value_element_size .
+    
+      ?processing_step_parent a schema:Action ;
+            schema:object ?mesh_file .
+    
+      ?processing_step_mesh a schema:Action ;
+            schema:result ?mesh_file ;
+            schema:instrument ?tool .
 
       ?tool a schema:SoftwareApplication ;
             rdfs:label ?tool_name .
-
-      FILTER EXISTS {
-        ?field_degree cr:source/cr:extract [ cr:jsonPath "/element-degree" ] ;
-                      sio:SIO_000210 [ schema:value 1 ] ;
-            cr:source/schema:MediaObject ?media_object_element_size .          
-      }
-
-      FILTER EXISTS {
-        ?field_order cr:source/cr:extract [ cr:jsonPath "/element-order" ] ;
-                     sio:SIO_000210 [ schema:value 1 ] ;
-            cr:source/schema:MediaObject ?media_object_element_size .         
-      }
     }
     """
 
     headers = [
-        "Simulation Hash",
-        "Tool Name",
         "element-size",
-        "young-modulus",
-        "poisson-ratio",
-        "max-mises-stress"
+        "max-mises-stress",
+        "Tool Name"
     ]
 
     table_data = []
 
     for g in graph_list:
-        local_ns = dict(g.namespace_manager.namespaces()).get("local")
-        hash_id = local_ns.strip("/").split("/")[-1] if local_ns else "UNKNOWN"
-
         results = g.query(query)
-
         for row in results:
-            table_data.append([
-                hash_id,
-                row.tool_name,
-                row.value_element_size,
-                row.value_young_modulus,
-                row.value_poisson_ratio,
-                row.value_max_mises_stress
-            ])
+            value_element_size = row.value_element_size
+            value_max_von_mises_stress_gauss_points = row.value_max_von_mises_stress_gauss_points
+            tool_name = row.tool_name
+            table_data.append(
+                [
+                    value_element_size,
+                    value_max_von_mises_stress_gauss_points,
+                    tool_name,
+                ]
+            )
 
     # Sort by element-size
     sort_key = headers.index("element-size")
@@ -105,6 +90,7 @@ def query_and_build_table(graph_list):
 
 def plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf"):
     """Plots element-size vs max-mises-stress grouped by tool and saves as PDF."""
+
     idx_element_size = headers.index("element-size")
     idx_stress = headers.index("max-mises-stress")
     idx_tool = headers.index("Tool Name")
@@ -119,6 +105,7 @@ def plot_element_size_vs_stress(headers, table_data, output_file="element_size_v
         grouped_data[tool].append((x, y))
         x_tick_set.add(x)
 
+    # Sort x-tick labels
     x_ticks = sorted(x_tick_set)
 
     plt.figure(figsize=(12, 5))
@@ -132,6 +119,11 @@ def plot_element_size_vs_stress(headers, table_data, output_file="element_size_v
     plt.title("element-size vs max-mises-stress by Tool")
     plt.legend(title="Tool Name")
     plt.grid(True)
+
+    # Use logarithmic scale for x-axis
+    plt.xscale('log')
+
+    # Set x-ticks to show original values
     plt.xticks(ticks=x_ticks, labels=[str(x) for x in x_ticks], rotation=45)
     plt.tight_layout()
     
@@ -148,4 +140,3 @@ if __name__ == "__main__":
     graphs = load_graphs(args.artifact_folder)
     headers, table_data = query_and_build_table(graphs)
     plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf")
-
