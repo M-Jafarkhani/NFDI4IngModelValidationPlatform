@@ -11,40 +11,46 @@ class ParameterExtractor(ParameterExtractorInterface):
         results = {}
         file_name = os.path.basename(file_path)
         if (
-            file_name.startswith("parameters_")
-            and rule_name == "create_mesh"
-        ):
-            with open(file_path) as f:
-                data = json.load(f)
-            for key, val in data.items():
-                if isinstance(val, dict):
-                    results[key] = {
-                        "value": val["value"],
-                        "unit": self._get_unit(key),
-                        "json-path": f"/{key}/value",
-                        "data-type": self._get_type(val["value"]),
-                    }
-                else:
-                    results[key] = {
-                        "value": val,
-                        "unit": None,
-                        "json-path": f"/{key}",
-                        "data-type": self._get_type(val),
-                    }
-        elif (
-            file_name.startswith("summary_")
+            file_name.startswith("summary_1")
             and rule_name == "summary"
         ):
             with open(file_path) as f:
                 data = json.load(f)
-            for key, val in data.items():
-                if key == "max_mises_stress":
-                    results[key] = {
-                        "value": val,
-                        "unit": None,
-                        "json-path": f"/{key}",
-                        "data-type": "schema:Float",
-                    }
+            for experiment in data:
+                config = experiment['configuration']
+                results.setdefault(config, {})
+                results[config].setdefault('has parameter', [])
+                results[config].setdefault('investigates', [])
+                for key, val in experiment['parameters'].items():
+                    if isinstance(val, dict):
+                        results[config]["has parameter"].append({key: {
+                            "value": val["value"],
+                            "unit": self._get_unit(key),
+                            "json-path": f"/{key}/value",
+                            "data-type": self._get_type(val["value"]),
+                        }})
+                    else:
+                        results[config]["has parameter"].append({key: {
+                            "value": val,
+                            "unit": None,
+                            "json-path": f"/{key}",
+                            "data-type": self._get_type(val),
+                        }})
+                for key, val in experiment['metrics'].items():
+                    if isinstance(val, dict):
+                        results[config]["investigates"].append({key: {
+                            "value": val["value"],
+                            "unit": self._get_unit(key),
+                            "json-path": f"/{key}/value",
+                            "data-type": self._get_type(val["value"]),
+                        }})
+                    else:
+                        results[config]["investigates"].append({key: {
+                            "value": val,
+                            "unit": None,
+                            "json-path": f"/{key}",
+                            "data-type": self._get_type(val),
+                        }})        
         return results
 
     def extract_tools(self, rule_name: str, env_file_content: str,) -> dict:
