@@ -37,11 +37,21 @@ def query_and_build_table(graph_list):
     WHERE {
       ?processing_step_child m4i:investigates ?max_von_mises_stress_gauss_points ;
             m4i:hasParameter ?element_size ;
+            m4i:hasParameter ?element_order ;
+            m4i:hasParameter ?element_degree ;
             schema:isPartOf ?processing_step_parent .
     
       ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
             rdfs:label "max_von_mises_stress_nodes" ;
             schema:value ?value_max_von_mises_stress_gauss_points .
+            
+      ?element_order a schema:PropertyValue ;
+            rdfs:label "element_order" ;
+            schema:value 1 .
+
+      ?element_degree a schema:PropertyValue ;
+            rdfs:label "element_degree" ;
+            schema:value 1 .      
 
       ?element_size a schema:PropertyValue ;
             rdfs:label "element_size" ;
@@ -116,7 +126,7 @@ def plot_element_size_vs_stress(headers, table_data, output_file="element_size_v
 
     plt.xlabel("element-size")
     plt.ylabel("max-mises-stress")
-    plt.title("element-size vs max-mises-stress by Tool")
+    plt.title("element-size vs max-mises-stress by Tool\n(element-order = 1 , element-degree = 1)")
     plt.legend(title="Tool Name")
     plt.grid(True)
 
