@@ -109,8 +109,8 @@ jobs:
         
       - name: Update conda from environment_postprocessing.yml
         run: |
-          conda env update -n base -f environment_postprocessing.yml
-        
+          conda env update -n base -f benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+
       - name: Run plotting script
         run: |
           python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
