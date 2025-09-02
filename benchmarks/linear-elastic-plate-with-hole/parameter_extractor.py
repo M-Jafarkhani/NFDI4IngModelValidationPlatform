@@ -58,6 +58,7 @@ class ParameterExtractor(ParameterExtractorInterface):
             capture_output=True,
             text=True
         )
+        print(command.stdout)
         packages = json.loads(command.stdout)
         targets = ["fenics-dolfinx", "KratosMultiphysics-all"]
         results = {}
