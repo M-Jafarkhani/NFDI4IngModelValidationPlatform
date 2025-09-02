@@ -3,8 +3,7 @@ import os
 from snakemake_report_plugin_metadata4ing.interfaces import (
     ParameterExtractorInterface,
 )
-import yaml
-import re
+import subprocess
 
 class ParameterExtractor(ParameterExtractorInterface):
     def extract_params(self, rule_name: str, file_path: str) -> dict:
@@ -54,33 +53,19 @@ class ParameterExtractor(ParameterExtractorInterface):
         return results
 
     def extract_tools(self, rule_name: str, env_file_content: str,) -> dict:
+        command = subprocess.run(
+            ["conda", "list", "--json"],
+            capture_output=True,
+            text=True
+        )
+        packages = json.loads(command.stdout)
+        targets = ["fenics-dolfinx", "KratosMultiphysics-all"]
         results = {}
-        parsed = yaml.safe_load(env_file_content)
-        dependencies = parsed.get("dependencies", [])
-
-        for dep in dependencies:
-           if isinstance(dep, str):
-               match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', dep)
-               if match:
-                   name, version = match.groups()
-                   results[name] = version if version else None
-           elif isinstance(dep, dict):
-               for _, pkgs in dep.items():
-                   for pkg in pkgs:
-                       match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', pkg)
-                       if match:
-                           name, version = match.groups()
-                           results[name] = version if version else None
-        rename_map = {
-            "fenics-dolfinx": "FEniCS",
-            "KratosMultiphysics-all": "Kratos Multiphysics"
-        }
-
-        filtered_results = {
-            rename_map[k]: v for k, v in results.items() if k in rename_map
-        }
-        
-        return filtered_results
+        for pkg_name in targets:
+            pkg = next((p for p in packages if p["name"] == pkg_name), None)
+            if pkg:
+                results[pkg_name] = pkg["version"]
+        return results
 
     def _get_unit(self, name: str):
         return {
