@@ -8,5 +8,3 @@ dependencies:
   - python=3.12
   - pint
   - pyvista
-  - matplotlib
-  - rdflib
