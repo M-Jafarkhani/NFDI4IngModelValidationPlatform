@@ -22,7 +22,7 @@ class ParameterExtractor(ParameterExtractorInterface):
                 if isinstance(val, dict):
                     results[rule_name]["has parameter"].append({key: {
                         "value": val["value"],
-                        "unit": self._get_unit(key),
+                        "unit": f"units:{val["unit"] }" if "unit" in val else None,
                         "json-path": f"/{key}/value",
                         "data-type": self._get_type(val["value"]),
                     }})
@@ -74,15 +74,6 @@ class ParameterExtractor(ParameterExtractorInterface):
                                 results[name] = version if version else None
     
         return results
-
-    def _get_unit(self, name: str):
-        return {
-            "young-modulus": "units:PA",
-            "load": "units:MegaPA",
-            "length": "units:m",
-            "radius": "units:m",
-            "element-size": "units:m",
-        }.get(name)
 
     def _get_type(self, val):
         if isinstance(val, float):
