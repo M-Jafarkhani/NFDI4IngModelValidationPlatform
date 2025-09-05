@@ -1,6 +1,7 @@
 name: postprocessing
 channels:
   - conda-forge
+  - defaults
 
 channel_priority: strict
 
