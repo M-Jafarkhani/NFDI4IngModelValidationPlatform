@@ -114,11 +114,19 @@ jobs:
         
       - name: Update environment
         run: mamba env update -n postprocessing -f benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
-
+      
+      - name: Setup env and run plotting script
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: postprocessing
+            use-mamba: true
+            environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+      
       - name: Run plotting script
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
-        
+          conda run -n postprocessing python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
+      
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
         with:
