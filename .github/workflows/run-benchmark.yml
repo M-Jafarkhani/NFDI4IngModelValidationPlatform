@@ -88,13 +88,13 @@ jobs:
     steps:
       - name: Checkout repo content
         uses: actions/checkout@v2
-    
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: linear-elastic-plate-with-hole_snakemake_provenance
           path: ./artifact_files
-        
+
       - name: Unzip all files
         run: |
           mkdir -p ./unzipped_files
@@ -102,31 +102,19 @@ jobs:
             unzip -o "$f" -d ./unzipped_files
           done
 
-      - name: Setup Mambaforge
+      - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
         with:
             miniforge-version: latest
             activate-environment: postprocessing 
             use-mamba: true
-
-      - name: Set strict channel priority
-        run: conda config --set channel_priority strict
-        
-      - name: Update environment
-        run: mamba env update -n postprocessing -f benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
-      
-      - name: Setup env and run plotting script
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-            miniforge-version: latest
-            activate-environment: postprocessing
-            use-mamba: true
             environment-file: benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
-      
+
       - name: Run plotting script
+        shell: bash -l {0}
         run: |
-          conda run -n postprocessing python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
-      
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
+
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
         with:

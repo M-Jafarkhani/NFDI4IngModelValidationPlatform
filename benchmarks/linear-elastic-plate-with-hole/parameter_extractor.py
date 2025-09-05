@@ -12,6 +12,7 @@ class ParameterExtractor(ParameterExtractorInterface):
         file_name = os.path.basename(file_path)
         if (
             file_name.startswith("parameters_")
+            and file_name.endswith(".json")
             and rule_name.startswith("postprocess_")
         ):
             results.setdefault(rule_name, {}).setdefault("has parameter", [])
@@ -34,6 +35,7 @@ class ParameterExtractor(ParameterExtractorInterface):
                     }})
         elif (
             file_name.startswith("solution_")
+            and file_name.endswith(".json")
             and rule_name.startswith("postprocess_")
         ):
             results.setdefault(rule_name, {}).setdefault("investigates", [])
