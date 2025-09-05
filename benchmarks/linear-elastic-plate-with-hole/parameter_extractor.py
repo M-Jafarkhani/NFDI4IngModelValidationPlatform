@@ -4,6 +4,7 @@ from snakemake_report_plugin_metadata4ing.interfaces import (
     ParameterExtractorInterface,
 )
 import yaml
+import re
 
 class ParameterExtractor(ParameterExtractorInterface):
     def extract_params(self, rule_name: str, file_path: str) -> dict:
@@ -53,30 +54,24 @@ class ParameterExtractor(ParameterExtractorInterface):
         return results
 
     def extract_tools(self, rule_name: str, env_file_content: str,) -> dict:
-        targets = ["fenics-dolfinx", "KratosMultiphysics-all"]
         results = {}
-
-        dependencies = env_file_content.get("dependencies", [])
+        parsed = yaml.safe_load(env_file_content)
+        dependencies = parsed.get("dependencies", [])
 
         for dep in dependencies:
-            # Case 1: direct conda dependencies like "fenics-dolfinx=0.9.*"
-            if isinstance(dep, str):
-                for pkg in targets:
-                    if dep.startswith(pkg):
-                        # Split version if available
-                        parts = dep.split("=", 1)
-                        version = parts[1] if len(parts) > 1 else None
-                        results[pkg] = version
-
-            # Case 2: pip dependencies listed under "pip"
-            elif isinstance(dep, dict) and "pip" in dep:
-                for pip_dep in dep["pip"]:
-                    for pkg in targets:
-                        if pip_dep.startswith(pkg):
-                            parts = pip_dep.split("==", 1)  # pip uses ==
-                            version = parts[1] if len(parts) > 1 else None
-                            results[pkg] = version
-
+           if isinstance(dep, str):
+               match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', dep)
+               if match:
+                   name, version = match.groups()
+                   results[name] = version if version else None
+           elif isinstance(dep, dict):
+               for _, pkgs in dep.items():
+                   for pkg in pkgs:
+                       match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', pkg)
+                       if match:
+                           name, version = match.groups()
+                           results[name] = version if version else None
+        
         return results
 
     def _get_unit(self, name: str):
