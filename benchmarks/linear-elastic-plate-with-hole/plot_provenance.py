@@ -35,10 +35,11 @@ def query_and_build_table(graph_list):
 
     SELECT DISTINCT ?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name
     WHERE {
-      ?processing_step_child m4i:investigates ?max_von_mises_stress_gauss_points ;
+      ?processing_step a schema:Action ;
             m4i:hasParameter ?element_size ;
             m4i:hasParameter ?element_order ;
             m4i:hasParameter ?element_degree ;
+            m4i:investigates ?max_von_mises_stress_gauss_points ;
             schema:instrument ?tool .
     
       ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
