@@ -33,13 +33,13 @@ def query_and_build_table(graph_list):
     PREFIX cr: <http://mlcommons.org/croissant/>
     PREFIX sio: <http://semanticscience.org/resource/>
 
-    SELECT DISTINCT  ?value_element_size  ?value_max_von_mises_stress_gauss_points ?tool_name
+    SELECT DISTINCT ?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name
     WHERE {
       ?processing_step_child m4i:investigates ?max_von_mises_stress_gauss_points ;
             m4i:hasParameter ?element_size ;
             m4i:hasParameter ?element_order ;
             m4i:hasParameter ?element_degree ;
-            schema:isPartOf ?processing_step_parent .
+            schema:instrument ?tool .
     
       ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
             rdfs:label "max_von_mises_stress_nodes" ;
@@ -51,18 +51,11 @@ def query_and_build_table(graph_list):
 
       ?element_degree a schema:PropertyValue ;
             rdfs:label "element_degree" ;
-            schema:value 1 .      
+            schema:value 1 .
 
       ?element_size a schema:PropertyValue ;
             rdfs:label "element_size" ;
             schema:value ?value_element_size .
-    
-      ?processing_step_parent a schema:Action ;
-            schema:object ?mesh_file .
-    
-      ?processing_step_mesh a schema:Action ;
-            schema:result ?mesh_file ;
-            schema:instrument ?tool .
 
       ?tool a schema:SoftwareApplication ;
             rdfs:label ?tool_name .
