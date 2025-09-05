@@ -101,10 +101,19 @@ jobs:
           for f in ./artifact_files/*.zip; do
             unzip -o "$f" -d ./unzipped_files
           done
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            miniforge-version: latest
+            activate-environment: postprocessing 
+            use-mamba: true
+
+      - name: Set strict channel priority
+        run: conda config --set channel_priority strict
         
-      - name: Update conda from environment_postprocessing.yml
-        run: |
-          conda env update -n base -f benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
+      - name: Update environment
+        run: mamba env update -n postprocessing -f benchmarks/linear-elastic-plate-with-hole/environment_postprocessing.yml
 
       - name: Run plotting script
         run: |
