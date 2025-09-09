@@ -3,8 +3,7 @@ import os
 from snakemake_report_plugin_metadata4ing.interfaces import (
     ParameterExtractorInterface,
 )
-import yaml
-import re
+import subprocess
 
 class ParameterExtractor(ParameterExtractorInterface):
     def extract_params(self, rule_name: str, file_path: str) -> dict:
@@ -52,27 +51,21 @@ class ParameterExtractor(ParameterExtractorInterface):
         return results
 
     def extract_tools(self, rule_name: str, env_file_content: str,) -> dict:
+        targets = {"kratosmultiphysics-all", "fenics-dolfinx"}
+        envs = self._list_conda_envs()
         results = {}
-        parsed = yaml.safe_load(env_file_content)
-        dependencies = parsed.get("dependencies", [])
-        targets = {"fenics-dolfinx", "KratosMultiphysics-all"}
-    
-        for dep in dependencies:
-            if isinstance(dep, str):
-                match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', dep)
-                if match:
-                    name, version = match.groups()
-                    if name in targets:
-                        results[name] = version if version else None
-            elif isinstance(dep, dict):
-                for _, pkgs in dep.items():
-                    for pkg in pkgs:
-                        match = re.match(r'^([a-zA-Z0-9_\-]+)([=<>!].*)?$', pkg)
-                        if match:
-                            name, version = match.groups()
-                            if name in targets:
-                                results[name] = version if version else None
-    
+
+        for _, env_path in envs.items():
+            try:
+                pkgs = self._get_packages(env_path)
+            except Exception as e:
+                # skip environments that cannot be read
+                continue
+
+            found = targets.intersection(pkgs.keys())
+            for pkg in found:
+                results[pkg] = pkgs[pkg]
+
         return results
 
     def _get_type(self, val):
@@ -83,3 +76,20 @@ class ParameterExtractor(ParameterExtractorInterface):
         elif isinstance(val, str):
             return "schema:Text"
         return None
+    
+    def _list_conda_envs(self):
+        """Return a dict {env_name: env_path} of all conda environments."""
+        result = subprocess.run(
+            ["conda", "env", "list", "--json"],
+            capture_output=True, text=True, check=True
+        )
+        envs_info = json.loads(result.stdout)
+        return {path.split("/")[-1]: path for path in envs_info["envs"]}
+
+    def _get_packages(self,env_path):
+        """Return dict {package: version} for given env path."""
+        result = subprocess.run(
+            ["conda", "list", "--prefix", env_path, "--json"],
+            capture_output=True, text=True, check=True
+        )
+        return {pkg["name"]: pkg["version"] for pkg in json.loads(result.stdout)}

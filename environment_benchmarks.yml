@@ -9,7 +9,6 @@ dependencies:
   - meshio
   - conda-lock
   - conda
-  - yaml
   - pip
   - pip:
       - "--editable=git+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing.git#egg=snakemake-report-plugin-metadata4ing"
