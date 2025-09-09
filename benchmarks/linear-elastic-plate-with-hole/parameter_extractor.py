@@ -63,13 +63,13 @@ class ParameterExtractor(ParameterExtractorInterface):
             if isinstance(dep, str):
                 for target in targets:
                     if dep.strip().lower().startswith(target.lower()):
-                        found_targets.add(target)
+                        found_targets.add(target.lower())
             elif isinstance(dep, dict):
                 for _, pkgs in dep.items():
                     for pkg in pkgs:
                         for target in targets:
                             if pkg.strip().lower().startswith(target.lower()):
-                                found_targets.add(target)
+                                found_targets.add(target.lower())
         
         envs = self._list_conda_envs()
         
@@ -110,4 +110,4 @@ class ParameterExtractor(ParameterExtractorInterface):
             capture_output=True, text=True, check=True
         )
         all_packages = json.loads(result.stdout)
-        return {pkg["name"]: pkg["version"] for pkg in all_packages if pkg["name"] in targets}
+        return {pkg["name"]: pkg["version"] for pkg in all_packages if pkg["name"].lower() in targets}
