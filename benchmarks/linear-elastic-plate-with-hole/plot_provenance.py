@@ -3,13 +3,14 @@ import argparse
 from rdflib import Graph
 import matplotlib.pyplot as plt
 from collections import defaultdict
+from generate_config import workflow_config
 
 def load_graphs(base_dir):
     """
     Walk through the base_dir and load all JSON-LD files into rdflib Graphs.
     """
     graph_list = []
-    for root, dirs, files in os.walk(base_dir):
+    for root, _, files in os.walk(base_dir):
         for file in files:
             if file.endswith(".jsonld"):
                 file_path = os.path.join(root, file)
@@ -29,12 +30,16 @@ def query_and_build_table(graph_list):
     Run SPARQL query on graphs and build a table.
     Returns headers and table_data.
     """
-    query = """
+    tools = workflow_config["tools"]
+    filter_conditions = " || ".join(
+        f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")' for tool in tools
+    )
+    query = f"""
     PREFIX cr: <http://mlcommons.org/croissant/>
     PREFIX sio: <http://semanticscience.org/resource/>
 
     SELECT DISTINCT ?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name
-    WHERE {
+    WHERE {{
       ?processing_step a schema:Action ;
             m4i:hasParameter ?element_size ;
             m4i:hasParameter ?element_order ;
@@ -61,8 +66,8 @@ def query_and_build_table(graph_list):
       ?tool a schema:SoftwareApplication ;
             rdfs:label ?tool_name .
             
-      FILTER (CONTAINS(LCASE(?tool_name), "kratos") || CONTAINS(LCASE(?tool_name), "fenics"))
-    }
+      FILTER ({filter_conditions})
+    }}
     """
 
     headers = [
