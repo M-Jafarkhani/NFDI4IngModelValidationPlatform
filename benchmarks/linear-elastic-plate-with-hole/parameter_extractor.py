@@ -20,7 +20,7 @@ class ParameterExtractor(ParameterExtractorInterface):
                 if isinstance(val, dict):
                     results[rule_name]["has parameter"].append({key: {
                         "value": val["value"],
-                        "unit": f"units:{val["unit"] }" if "unit" in val else None,
+                        "unit": f"{self._to_qudt(val["unit"])}" if "unit" in val else None,
                         "json-path": f"/{key}/value",
                         "data-type": self._get_type(val["value"]),
                     }})
@@ -49,6 +49,17 @@ class ParameterExtractor(ParameterExtractorInterface):
                     }})
         return results
     
+
+    def _to_qudt(self, unit_str: str) -> str:
+        mapping = {
+            "m": "units:M",
+            "s": "units:SEC",
+            "kg": "units:KiloGM",
+            "Pa": "units:PA",
+            "MPa": "units:MegaPA",
+            "N": "units:N",
+        }
+        return mapping.get(unit_str, f"")
 
     def _get_type(self, val):
         if isinstance(val, float):
