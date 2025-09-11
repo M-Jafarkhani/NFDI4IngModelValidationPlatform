@@ -60,6 +60,8 @@ def query_and_build_table(graph_list):
 
       ?tool a schema:SoftwareApplication ;
             rdfs:label ?tool_name .
+            
+      FILTER (CONTAINS(LCASE(?tool_name), "kratos") || CONTAINS(LCASE(?tool_name), "fenics"))
     }
     """
 
