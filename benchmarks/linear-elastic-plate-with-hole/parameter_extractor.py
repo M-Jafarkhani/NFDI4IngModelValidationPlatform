@@ -20,7 +20,7 @@ class ParameterExtractor(ParameterExtractorInterface):
                 if isinstance(val, dict):
                     results[rule_name]["has parameter"].append({key: {
                         "value": val["value"],
-                        "unit": f"{self._to_qudt(val["unit"])}" if "unit" in val else None,
+                        "unit": f"{val["unit"]}" if "unit" in val else None,
                         "json-path": f"/{key}/value",
                         "data-type": self._get_type(val["value"]),
                     }})
