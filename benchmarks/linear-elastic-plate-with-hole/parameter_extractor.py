@@ -48,18 +48,6 @@ class ParameterExtractor(ParameterExtractorInterface):
                         "data-type": "schema:Float",
                     }})
         return results
-    
-
-    def _to_qudt(self, unit_str: str) -> str:
-        mapping = {
-            "m": "units:M",
-            "s": "units:SEC",
-            "kg": "units:KiloGM",
-            "Pa": "units:PA",
-            "MPa": "units:MegaPA",
-            "N": "units:N",
-        }
-        return mapping.get(unit_str, f"")
 
     def _get_type(self, val):
         if isinstance(val, float):
