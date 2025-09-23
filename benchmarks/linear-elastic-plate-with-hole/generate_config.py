@@ -12,6 +12,7 @@ files = list(Path(".").glob("parameters_*.json"))
 # in theory, you could make that identical so parameters_1.json with configuration "1" 
 # would produce summary_1.json
 import json
+import copy
 def get_configuration(file):
     with open(file, 'r') as f:
         data = json.load(f)
@@ -39,15 +40,15 @@ if duplicates:
 configuration_to_parameter_file = {v: str(k) for k, v in configurations.items()}
 
 benchmark = "linear-elastic-plate-with-hole"
-# results are stored in snakemake_results/linear-elastic-plate-with-hole/fenics
-result_dir = join("snakemake_results", benchmark)
 
+# Template for workflow config
 workflow_config = {
-    "result_dir": result_dir,
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
     "tools": ["fenics", "kratos"],
-    "benchmark": "linear-elastic-plate-with-hole"
+    "benchmark": benchmark
 }
+
+# Write workflow configuration file
 with open("workflow_config.json", "w") as f:
     json.dump(workflow_config, f, indent=4)
