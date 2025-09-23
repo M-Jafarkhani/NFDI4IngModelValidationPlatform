@@ -44,8 +44,11 @@ jobs:
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           python generate_config.py
           snakemake --use-conda --force --cores 'all'
-          snakemake --use-conda --force --cores 'all' --reporter metadata4ing --report-metadata4ing-paramscript parameter_extractor.py
-
+          snakemake --use-conda --force --cores all \
+            --reporter metadata4ing \
+            --report-metadata4ing-paramscript parameter_extractor.py \
+            --report-metadata4ing-filename metadata4ing_provenance.zip
+      
       - name: run-fenics-nextflow-benchmark
         shell: bash -l {0}
         run: |
@@ -64,7 +67,7 @@ jobs:
         with:
             name: linear-elastic-plate-with-hole_snakemake_provenance
             path: |
-              benchmarks/linear-elastic-plate-with-hole/*.zip
+              benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance.zip
 
 
       - name: Archive fenics nextflow data
@@ -95,12 +98,10 @@ jobs:
           name: linear-elastic-plate-with-hole_snakemake_provenance
           path: ./artifact_files
 
-      - name: Unzip all files
+      - name: Unzip metadata4ing_provenance.zip
         run: |
-          mkdir -p ./unzipped_files
-          for f in ./artifact_files/*.zip; do
-            unzip -o "$f" -d ./unzipped_files
-          done
+          mkdir -p ./metadata4ing_provenance
+          unzip -o ./artifact_files/metadata4ing_provenance.zip -d ./metadata4ing_provenance
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -113,7 +114,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./unzipped_files
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./metadata4ing_provenance
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
