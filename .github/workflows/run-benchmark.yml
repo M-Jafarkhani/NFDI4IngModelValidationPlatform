@@ -60,10 +60,10 @@ jobs:
           cd $GITHUB_WORKSPACE/benchmarks/linear-elastic-plate-with-hole/
           nextflow run main.nf -params-file workflow_config.json -plugins nf-prov@1.4.0
 
-      - name: Archive Linear Elastic plate with a hole benchmark data from snakemake provenance
+      - name: Archive Linear Elastic plate with a hole benchmark data for snakemake
         uses: actions/upload-artifact@v4
         with:
-            name: linear-elastic-plate-with-hole_snakemake_provenance
+            name: snakemake_results_linear-elastic-plate-with-hole
             path: |
               benchmarks/linear-elastic-plate-with-hole/metadata4ing_provenance.zip
 
@@ -84,7 +84,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: linear-elastic-plate-with-hole_snakemake_provenance
+          name: snakemake_results_linear-elastic-plate-with-hole
           path: ./artifact_files
 
       - name: Unzip metadata4ing_provenance.zip
