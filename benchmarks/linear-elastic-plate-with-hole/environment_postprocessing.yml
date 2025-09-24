@@ -1,6 +1,7 @@
 name: postprocessing
 channels:
   - conda-forge
+  - defaults
 
 channel_priority: strict
 
@@ -8,3 +9,5 @@ dependencies:
   - python=3.12
   - pint
   - pyvista
+  - rdflib
+  - matplotlib
