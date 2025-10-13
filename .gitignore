@@ -1,2 +1,3 @@
 .snakemake
 site
+src/ROhub/passwordROHub.txt
