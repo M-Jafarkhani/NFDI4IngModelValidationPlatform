@@ -2,7 +2,7 @@
 # Using RoHub Python API
 
 ## Setup
-To interact with RoHub using code, you can install [RoHub Python API](https://gitlab.pcss.pl/daisd-public/rohub/rohub-api). You can create a `yml` file, which will install the package into your current directory. 
+To get started with RoHub using code, you can install [RoHub Python API](https://gitlab.pcss.pl/daisd-public/rohub/rohub-api). You can create a `yml` file, which will install the package into your current directory. 
 ```yml
 name: rohub_dev
 channels:
@@ -24,7 +24,7 @@ After creating an environment, you have to specify which RoHub endpoints you wan
 ```bash
 cp -v .env "$(pip show rohub | awk -F': ' '/Editable project location/ {print $2}')/.env"
 ```
-This is a sample `.env` file which works connects to the Development:
+This is a sample `.env` file which connects to the Development:
 
 ```bash
 [API_SECTION]
@@ -46,7 +46,7 @@ API_URL = https://api.rohub.org/api/
 If you copy the `.env` file in the wrong location, it will automatically works with the Production endpoint.
 
 ## Login
-Before start coding, you need to create an account. You need to create separate accounts for  [Production](https://www.rohub.org/) and [Development](https://rohub2020-rohub.apps.paas-dev.psnc.pl/).  After creating an account, you need your username and password to login into hub, and starting working with research objects:
+Before start coding, you need to create an account. You need to create separate accounts for  [Production](https://www.rohub.org/) and [Development](https://rohub2020-rohub.apps.paas-dev.psnc.pl/).  After creating an account, you need your username and password to login into hub, and start working with research objects:
 
 ```python
 import  rohub
@@ -59,7 +59,7 @@ user_pwd  =  "your password"
 rohub.login(username=user_name, password=user_pwd)
 ```
 
-Now you list your uploaded research objects. and print their properties:
+Now you can list your uploaded research objects, and print their properties:
 
 ```python
 my_ros  =  rohub.list_my_ros()
@@ -130,10 +130,86 @@ annotation_json  = [
 ]
 add_annotations_result = RO.add_annotations(body_specification_json=annotation_json)
 ```
-After adding this annotations, it will appear in your SPARQL query:
+After adding these annotations, it will appear in your SPARQL query:
 ```sparql
 SELECT *
 WHERE {
   <https://w3id.org/ro-id/e2cd6485-8400-4c49-91e1-feb2e9402596> <http://hasStudySubject.com> ?o .
 }
 ```
+
+## Access to `ro-crate-metadata.json` Contents
+
+After uploading or creating a research object, you can access all the data in `ro-crate-metadata.json` as triples. To get started, let's assume we have a research object with identifier `c87448ad-5e9a-49fa-85e5-1fed9ecf9709`. The contents are in a named graph, but in order to find it, we have to query its Dataset:
+```sparql
+SELECT *
+WHERE {
+  GRAPH ?g {
+    <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709> a <http://schema.org/Dataset> .
+  }
+}
+```
+This query should return a single value, which is the named graph for `ro-crate-metadata.json`. In our example, the named graph should be:
+```
+https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl
+```
+Now that we have found the named graph, we can query on it:
+```sparql
+SELECT *
+WHERE {
+  GRAPH <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl> {
+    ?s ?p ?o .
+  }
+}
+```
+This query returns the triples that are in the `ro-crate-metadata.json` file. For example, if the file contains a node as:
+```json
+{
+    "@id": "#task/1cc8abe917eea617237b37eb263499f7",
+    "@type": "CreateAction",
+    "name": "summary (1)",
+    "instrument": null,
+    "agent": {
+        "@id": "https://orcid.org/0000-0000-0000-0000"
+    },
+    "object": [
+        {
+            "@id": "file:///home/runner/work/NFDI4IngModelValidationPlatform/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic-plate-with-hole/summarise_results.py"
+        }
+    ],
+    "result": [
+        {
+            "@id": "#task/1cc8abe917eea617237b37eb263499f7/summary.json"
+        }
+    ],
+    "actionStatus": "http://schema.org/CompletedActionStatus"
+},     
+```
+Then, part of the query + results for the specific node `#task/1cc8abe917eea617237b37eb263499f7` would be:
+
+```sparql
+SELECT *
+WHERE {
+  GRAPH <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl> {
+    <http://w3id.org/ro-id/rohub/model#task/1cc8abe917eea617237b37eb263499f7> ?p ?o .
+  }
+}
+```
+
+|    ?p    |    ?o    |
+|----------|----------|
+| http://xmlns.com/foaf/0.1/name     | "summary (1)"     |
+| http://schema.org/result     | "#task/1cc8abe917eea617237b37eb263499f7/summary.json"     |
+| http://schema.org/actionStatus     | http://schema.org/CompletedActionStatus     |
+| http://schema.org/agent     | https://orcid.org/0000-0000-0000-0000     |
+| http://www.w3.org/1999/02/22-rdf-syntax-ns#type    | http://schema.org/CreateAction    |
+| http://schema.org/object     | "home/runner/work/NFDI4IngModelValidationPlatform/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic-plate-with-hole/summarise_results.py"     |
+
+
+
+
+
+
+
+
+
