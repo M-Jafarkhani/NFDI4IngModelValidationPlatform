@@ -102,7 +102,7 @@ RO  =  rohub.ros_upload(path_to_zip=zip_path)
 print(f"Identifier: {RO.identifier}")
 ```
 
-After successfully uploading or creating a research object, api gives back its `identifier` which could be viewed on the portal. For example, if the identifier is `15b15e62-6136-4f04-a9eb-99c201befe0d`, then you can view it on https://w3id.org/ro-id-dev/15b15e62-6136-4f04-a9eb-99c201befe0d or https://w3id.org/ro-id/15b15e62-6136-4f04-a9eb-99c201befe0d, depending on which endpoint you are working on with. 
+After successfully uploading or creating a research object, api gives back its `identifier` which could be viewed on the portal. For example, if the identifier is `716b082f-57f0-45de-84b2-4440ae8bcf57`, then you can view it on https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57 or https://w3id.org/ro-id/716b082f-57f0-45de-84b2-4440ae8bcf57, depending on which endpoint you are working on with. 
 
 ## Accessing Research Objects
 
@@ -113,15 +113,15 @@ You can query object properties by id as:
 ```sparql
 SELECT *
 WHERE {
-  <https://w3id.org/ro-id-dev/15b15e62-6136-4f04-a9eb-99c201befe0d> ?p ?o .
+  <https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57> ?p ?o .
 }
 ```
 
 ## Adding Annotations
-You can annotate a resource as well. For example, for a research object with identifier `e2cd6485-8400-4c49-91e1-feb2e9402596`  you can add a list of properties and values:
+You can annotate a resource as well. For example, for a research object with identifier `716b082f-57f0-45de-84b2-4440ae8bcf57`  you can add a list of properties and values:
 
 ```python
-RO  =  rohub.ros_load("e2cd6485-8400-4c49-91e1-feb2e9402596")
+RO  =  rohub.ros_load("716b082f-57f0-45de-84b2-4440ae8bcf57")
 annotation_json  = [
 	{
 		"property": "http://hasStudySubject.com",
@@ -134,30 +134,30 @@ After adding these annotations, it will appear in your SPARQL query:
 ```sparql
 SELECT *
 WHERE {
-  <https://w3id.org/ro-id/e2cd6485-8400-4c49-91e1-feb2e9402596> <http://hasStudySubject.com> ?o .
+  <https://w3id.org/ro-id/716b082f-57f0-45de-84b2-4440ae8bcf57> <http://hasStudySubject.com> ?o .
 }
 ```
 
 ## Access to `ro-crate-metadata.json` Contents
 
-After uploading or creating a research object, you can access all the data in `ro-crate-metadata.json` as triples. To get started, let's assume we have a research object with identifier `c87448ad-5e9a-49fa-85e5-1fed9ecf9709`. The contents are in a named graph, but in order to find it, we have to query its Dataset:
+After uploading or creating a research object, you can access all the data in `ro-crate-metadata.json` as triples. To get started, let's assume we have a research object with identifier `716b082f-57f0-45de-84b2-4440ae8bcf57`. The contents are in a named graph, but in order to find it, we have to query its Dataset:
 ```sparql
 SELECT *
 WHERE {
   GRAPH ?g {
-    <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709> a <http://schema.org/Dataset> .
+    <https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57> a <http://schema.org/Dataset> .
   }
 }
 ```
 This query should return a single value, which is the named graph for `ro-crate-metadata.json`. In our example, the named graph should be:
 ```
-https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl
+https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57/.ro/annotations/b169ef47-3493-4dda-baa8-618c28e35ed2.ttl
 ```
 Now that we have found the named graph, we can query on it:
 ```sparql
 SELECT *
 WHERE {
-  GRAPH <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl> {
+  GRAPH <https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57/.ro/annotations/b169ef47-3493-4dda-baa8-618c28e35ed2.ttl> {
     ?s ?p ?o .
   }
 }
@@ -165,45 +165,32 @@ WHERE {
 This query returns the triples that are in the `ro-crate-metadata.json` file. For example, if the file contains a node as:
 ```json
 {
-    "@id": "#task/1cc8abe917eea617237b37eb263499f7",
-    "@type": "CreateAction",
-    "name": "summary (1)",
-    "instrument": null,
-    "agent": {
-        "@id": "https://orcid.org/0000-0000-0000-0000"
-    },
-    "object": [
-        {
-            "@id": "file:///home/runner/work/NFDI4IngModelValidationPlatform/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic-plate-with-hole/summarise_results.py"
-        }
-    ],
-    "result": [
-        {
-            "@id": "#task/1cc8abe917eea617237b37eb263499f7/summary.json"
-        }
-    ],
-    "actionStatus": "http://schema.org/CompletedActionStatus"
-},     
+  "@id": "#variable_young_modulus_8",
+  "@type": "schema:PropertyValue",
+  "rdfs:label": "young_modulus",
+  "schema:unitCode": {
+      "@id": "unit:PA"
+  },
+  "schema:value": 210000000000.0
+},  
 ```
-Then, part of the query + results for the specific node `#task/1cc8abe917eea617237b37eb263499f7` would be:
+Then, part of the query + results for the specific node `#variable_young_modulus_8` would be:
 
 ```sparql
 SELECT *
 WHERE {
-  GRAPH <https://w3id.org/ro-id-dev/c87448ad-5e9a-49fa-85e5-1fed9ecf9709/.ro/annotations/c45c44b2-3afb-4059-9505-25fc03b60139.ttl> {
-    <http://w3id.org/ro-id/rohub/model#task/1cc8abe917eea617237b37eb263499f7> ?p ?o .
+  GRAPH <https://w3id.org/ro-id-dev/716b082f-57f0-45de-84b2-4440ae8bcf57/.ro/annotations/b169ef47-3493-4dda-baa8-618c28e35ed2.ttl> {
+    <http://w3id.org/ro-id/rohub/model#variable_young_modulus_8> ?p ?o .
   }
 }
 ```
 
 |    ?p    |    ?o    |
 |----------|----------|
-| http://xmlns.com/foaf/0.1/name     | "summary (1)"     |
-| http://schema.org/result     | "#task/1cc8abe917eea617237b37eb263499f7/summary.json"     |
-| http://schema.org/actionStatus     | http://schema.org/CompletedActionStatus     |
-| http://schema.org/agent     | https://orcid.org/0000-0000-0000-0000     |
-| http://www.w3.org/1999/02/22-rdf-syntax-ns#type    | http://schema.org/CreateAction    |
-| http://schema.org/object     | "home/runner/work/NFDI4IngModelValidationPlatform/NFDI4IngModelValidationPlatform/benchmarks/linear-elastic-plate-with-hole/summarise_results.py"     |
+|"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"|"http://schema.org/PropertyValue"|
+|"http://www.w3.org/2000/01/rdf-schema#label"|"young_modulus"|
+|"http://schema.org/value"|"210000000000.0"|
+|"http://schema.org/unitCode"|"unit:PA"|
 
 
 
