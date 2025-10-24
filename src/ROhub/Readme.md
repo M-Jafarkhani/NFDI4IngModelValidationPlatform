@@ -192,11 +192,81 @@ WHERE {
 |"http://schema.org/value"|"210000000000.0"|
 |"http://schema.org/unitCode"|"unit:PA"|
 
+## Sample parameter extraction from Snakemake provenance research object
 
+It is possible upload the snakemake research object artificated which was created by snakemake-metadat4ing-reporter-plugin onto the Rohub, and query the workflow input and output parameters.
 
+After uploading the artifact, the api gives back an id, in our case suppose that it is 
+`a1485323-9904-438d-b188-794a71e58ea3`. We can run the following query on the [Development](https://rohub2020-api-virtuoso-route-rohub.apps.paas-dev.psnc.pl/sparql/%22), and see the results:
 
+```sparql
+PREFIX schema: <http://schema.org/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX m4i: <http://w3id.org/nfdi4ing/metadata4ing#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
+SELECT DISTINCT ?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name
+WHERE {
+  # ---- Input UUID ----
+  VALUES ?uuid { "a1485323-9904-438d-b188-794a71e58ea3" }
 
+  # ---- Construct the full Dataset IRI from UUID ----
+  BIND(IRI(CONCAT("https://w3id.org/ro-id-dev/", ?uuid)) AS ?dataset)
 
+  # ---- Find which graph contains that dataset ----
+  {
+    SELECT ?g WHERE {
+      GRAPH ?g { ?dataset a schema:Dataset . }
+    }
+  }
 
+  # ---- Query the graph found above ----
+  GRAPH ?g {
+    ?processing_step a m4i:Method ;
+                     m4i:hasParameter ?element_size ;
+                     m4i:hasParameter ?element_order ;
+                     m4i:hasParameter ?element_degree ;
+                     m4i:investigates ?max_von_mises_stress_gauss_points ;
+                     m4i:implementedByTool ?tool .
 
+    ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
+                                       rdfs:label "max_von_mises_stress_nodes" ;
+                                       schema:value ?value_max_von_mises_stress_gauss_points .
+
+    ?element_order a schema:PropertyValue ;
+                   rdfs:label "element_order" ;
+                   schema:value "1" .
+
+    ?element_degree a schema:PropertyValue ;
+                    rdfs:label "element_degree" ;
+                    schema:value "1" .
+
+    ?element_size a schema:PropertyValue ;
+                  rdfs:label "element_size" ;
+                  schema:value ?value_element_size .
+
+    ?tool a schema:SoftwareApplication ;
+          rdfs:label ?tool_name .
+
+    FILTER (LCASE(str(?tool_name)) = "fenics-dolfinx" || LCASE(str(?tool_name)) = "kratosmultiphysics-all")
+  }
+}
+ORDER BY ?tool_name xsd:decimal(?value_element_size)
+
+```
+The output should look like:
+
+| value_element_size  | value_max_von_mises_stress_gauss_points | tool_name              |
+|---------------------|-----------------------------------------|------------------------|
+| 0.003125            | 299783353.3636479                       | fenics-dolfinx         |
+| 0.00625             | 299475432.93192506                      | fenics-dolfinx         |
+| 0.0125              | 300129622.72171265                      | fenics-dolfinx         |
+| 0.025               | 299791507.5586339                       | fenics-dolfinx         |
+| 0.05                | 296013209.51795876                      | fenics-dolfinx         |
+| 0.1                 | 273190934.3950997                       | fenics-dolfinx         |
+| 0.003125            | 298100064.0                             | kratosmultiphysics-all |
+| 0.00625             | 296148032.0                             | kratosmultiphysics-all |
+| 0.0125              | 291662080.0                             | kratosmultiphysics-all |
+| 0.025               | 283087904.0                             | kratosmultiphysics-all |
+| 0.05                | 263992000.0                             | kratosmultiphysics-all |
+| 0.1                 | 226270384.0                             | kratosmultiphysics-all |
