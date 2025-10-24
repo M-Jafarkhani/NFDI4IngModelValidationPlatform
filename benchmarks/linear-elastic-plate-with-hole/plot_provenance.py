@@ -42,7 +42,7 @@ def query_and_build_table(graph_list):
             m4i:hasParameter ?element_order ;
             m4i:hasParameter ?element_degree ;
             m4i:investigates ?max_von_mises_stress_gauss_points ;
-            m4i:implementedByTool ?tool .
+            ssn:implementedBy ?tool .
     
       ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
             rdfs:label "max_von_mises_stress_nodes" ;
