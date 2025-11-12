@@ -12,15 +12,14 @@ def load_graphs(base_dir):
     graph_list = []
     for root, _, files in os.walk(base_dir):
         for file in files:
-            if file.endswith(".jsonld"):
+            if file == "provenance.jsonld":
                 file_path = os.path.join(root, file)
                 try:
                     g = Graph()
                     g.parse(file_path, format='json-ld')
                     graph_list.append(g)
-                    print(f"✅ Parsed: {file_path}")
                 except Exception as e:
-                    print(f"❌ Failed to parse {file_path}: {e}")
+                    print(f"Failed to parse {file_path}: {e}")
     print(f"\nTotal graphs loaded: {len(graph_list)}")
     return graph_list
 
@@ -96,6 +95,8 @@ def query_and_build_table(graph_list):
     sort_key = headers.index("element-size")
     table_data.sort(key=lambda x: x[sort_key])
 
+    assert len(table_data) > 0, "No rows returned from SPARQL query — table_data is empty."
+    
     return headers, table_data
 
 
