@@ -46,15 +46,7 @@ jobs:
           snakemake --use-conda --force --cores all \
             --reporter metadata4ing \
             --report-metadata4ing-paramscript parameter_extractor.py \
-            --report-metadata4ing-filename ${{ env.SNAKEMAKE_PROVENANCE_FILE }}
-      
-      - name: Verify Snakemake provevance output
-        run: |
-          FILE="benchmarks/linear-elastic-plate-with-hole/${SNAKEMAKE_PROVENANCE_FILE}.zip"
-          if [ ! -f "$FILE" ]; then
-            echo "ERROR: Snakemake provevance zip file not found: $FILE"
-            exit 1
-          fi
+            --report-metadata4ing-filename $SNAKEMAKE_PROVENANCE_FILE
 
       - name: run_linear-elastic-plate-with-hole-benchmarks_nextflow
         shell: bash -l {0}
@@ -67,7 +59,7 @@ jobs:
         with:
             name: snakemake_results_linear-elastic-plate-with-hole
             path: |
-              benchmarks/linear-elastic-plate-with-hole/${SNAKEMAKE_PROVENANCE_FILE}.zip
+              benchmarks/linear-elastic-plate-with-hole/${{ env.SNAKEMAKE_PROVENANCE_FILE }}.zip
 
       - name: Archive Linear Elastic plate with a hole benchmark data for nextflow
         uses: actions/upload-artifact@v4
@@ -91,8 +83,8 @@ jobs:
 
       - name: Unzip Snakemake Provevnance
         run: |
-          mkdir -p ./${SNAKEMAKE_PROVENANCE_FILE}
-          unzip -o ./artifact_files/${SNAKEMAKE_PROVENANCE_FILE}.zip -d ./${SNAKEMAKE_PROVENANCE_FILE}
+          mkdir -p ./$SNAKEMAKE_PROVENANCE_FILE
+          unzip -o ./artifact_files/$SNAKEMAKE_PROVENANCE_FILE.zip -d ./$SNAKEMAKE_PROVENANCE_FILE
 
       - name: Setup Mambaforge with postprocessing env
         uses: conda-incubator/setup-miniconda@v3
@@ -105,7 +97,7 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./${SNAKEMAKE_PROVENANCE_FILE}
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./$SNAKEMAKE_PROVENANCE_FILE
 
       - name: Upload PDF plot as artifact
         uses: actions/upload-artifact@v4
