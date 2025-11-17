@@ -155,7 +155,7 @@ def plot_element_size_vs_stress(headers, table_data, output_file):
     plt.xticks(ticks=x_ticks, labels=[str(x) for x in x_ticks], rotation=45)
     plt.tight_layout()
 
-    # Save to PDF instead of showing
+    # Save to file
     plt.savefig(output_file)
     print(f"Plot saved as {output_file}")
 
@@ -283,17 +283,26 @@ if __name__ == "__main__":
         description="Process JSON-LD artifacts and display simulation results."
     )
     parser.add_argument(
-        "artifact_folder",
+        "--artifact_folder",
         type=str,
+        required=True,
         help="Path to the folder containing unzipped artifacts",
+    )
+    parser.add_argument(
+        "--output_file",
+        type=str,
+        required=True,
+        help="File name with extension for the final file to visualize the graph",
     )
     args = parser.parse_args()
 
     graphs = load_graphs(args.artifact_folder)
     headers, table_data = query_and_build_table(graphs)
+    
     assert ensure_provenance_data(args.artifact_folder, headers, table_data)
+    
     plot_element_size_vs_stress(
         headers,
         table_data,
-        output_file=f"{PARAM_ELEMENT_SIZE}_vs_{METRIC_MAX_MISES_NODES}.pdf",
+        output_file=f"{args.output_file}",
     )

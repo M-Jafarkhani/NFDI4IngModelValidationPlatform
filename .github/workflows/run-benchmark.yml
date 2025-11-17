@@ -11,6 +11,7 @@ on:
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
   SNAKEMAKE_PROVENANCE_FILE: metadata4ing_provenance
+  PROVENANACE_FILE_NAME: element_size_vs_max_mises_stress.pdf
 
 jobs:
   run-simulation:
@@ -97,10 +98,12 @@ jobs:
       - name: Run plotting script
         shell: bash -l {0}
         run: |
-          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py ./$SNAKEMAKE_PROVENANCE_FILE
+          python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py \
+            --artifact_folder "./$SNAKEMAKE_PROVENANCE_FILE" \
+            --output_file "$PROVENANACE_FILE_NAME"
 
-      - name: Upload PDF plot as artifact
+      - name: Upload provevance file as artifact
         uses: actions/upload-artifact@v4
         with:
           name: element-size-vs-stress-plot
-          path: element_size_vs_stress.pdf
+          path: $PROVENANACE_FILE_NAME
