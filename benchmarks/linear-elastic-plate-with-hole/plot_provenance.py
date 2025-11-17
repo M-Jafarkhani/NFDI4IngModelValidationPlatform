@@ -157,7 +157,6 @@ def plot_element_size_vs_stress(headers, table_data, output_file):
 
     # Save to file
     plt.savefig(output_file)
-    print(f"Plot saved as {output_file}")
 
 
 def load_truth_from_summary(base_dir, tools, benchmark):
