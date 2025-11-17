@@ -18,6 +18,7 @@ BENCHMARK_NAME = "linear-elastic-plate-with-hole"
 SUMMARY_FILENAME = "summary.json"
 SNAKEMAKE_RESULTS_FOLDER = "snakemake_results"
 
+
 def load_graphs(base_dir):
     """
     Walk through the base_dir and load all JSON-LD files into rdflib Graphs.
@@ -29,7 +30,7 @@ def load_graphs(base_dir):
                 file_path = os.path.join(root, file)
                 try:
                     g = Graph()
-                    g.parse(file_path, format='json-ld')
+                    g.parse(file_path, format="json-ld")
                     graph_list.append(g)
                 except Exception as e:
                     print(f"Failed to parse {file_path}: {e}")
@@ -82,11 +83,7 @@ def query_and_build_table(graph_list):
     }}
     """
 
-    headers = [
-        PARAM_ELEMENT_SIZE,
-        METRIC_MAX_MISES_NODES,
-        COL_TOOL_NAME
-    ]
+    headers = [PARAM_ELEMENT_SIZE, METRIC_MAX_MISES_NODES, COL_TOOL_NAME]
 
     table_data = []
 
@@ -94,7 +91,9 @@ def query_and_build_table(graph_list):
         results = g.query(query)
         for row in results:
             value_element_size = row.value_element_size
-            value_max_von_mises_stress_gauss_points = row.value_max_von_mises_stress_gauss_points
+            value_max_von_mises_stress_gauss_points = (
+                row.value_max_von_mises_stress_gauss_points
+            )
             tool_name = row.tool_name
             table_data.append(
                 [
@@ -108,12 +107,14 @@ def query_and_build_table(graph_list):
     sort_key = headers.index(PARAM_ELEMENT_SIZE)
     table_data.sort(key=lambda x: x[sort_key])
 
-    assert len(table_data) > 0, "No rows returned from SPARQL query — table_data is empty."
-    
+    assert (
+        len(table_data) > 0
+    ), "No rows returned from SPARQL query — table_data is empty."
+
     return headers, table_data
 
 
-def plot_element_size_vs_stress(headers, table_data, output_file=f"{PARAM_ELEMENT_SIZE}_vs_{METRIC_MAX_MISES_NODES}.pdf"):
+def plot_element_size_vs_stress(headers, table_data, output_file):
     """Plots element-size vs max-mises-stress grouped by tool and saves as PDF."""
 
     idx_element_size = headers.index(PARAM_ELEMENT_SIZE)
@@ -137,21 +138,23 @@ def plot_element_size_vs_stress(headers, table_data, output_file=f"{PARAM_ELEMEN
     for tool, values in grouped_data.items():
         values.sort()
         x_vals, y_vals = zip(*values)
-        plt.plot(x_vals, y_vals, marker='o', linestyle='-', label=tool)
+        plt.plot(x_vals, y_vals, marker="o", linestyle="-", label=tool)
 
     plt.xlabel(PARAM_ELEMENT_SIZE)
     plt.ylabel(METRIC_MAX_MISES_NODES)
-    plt.title(f"{PARAM_ELEMENT_SIZE} vs {METRIC_MAX_MISES_NODES} by Tool\n(element-order = 1 , element-degree = 1)")
+    plt.title(
+        f"{PARAM_ELEMENT_SIZE} vs {METRIC_MAX_MISES_NODES} by Tool\n(element-order = 1 , element-degree = 1)"
+    )
     plt.legend(title=COL_TOOL_NAME)
     plt.grid(True)
 
     # Use logarithmic scale for x-axis
-    plt.xscale('log')
+    plt.xscale("log")
 
     # Set x-ticks to show original values
     plt.xticks(ticks=x_ticks, labels=[str(x) for x in x_ticks], rotation=45)
     plt.tight_layout()
-    
+
     # Save to PDF instead of showing
     plt.savefig(output_file)
     print(f"Plot saved as {output_file}")
@@ -170,7 +173,7 @@ def load_truth_from_summary(base_dir, tools, benchmark):
             SNAKEMAKE_RESULTS_FOLDER,
             benchmark,
             tool,
-            SUMMARY_FILENAME
+            SUMMARY_FILENAME,
         )
 
         if not os.path.exists(summary_path):
@@ -276,11 +279,21 @@ def ensure_provenance_data(base_dir, headers, table_data) -> bool:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process JSON-LD artifacts and display simulation results.")
-    parser.add_argument("artifact_folder", type=str, help="Path to the folder containing unzipped artifacts")
+    parser = argparse.ArgumentParser(
+        description="Process JSON-LD artifacts and display simulation results."
+    )
+    parser.add_argument(
+        "artifact_folder",
+        type=str,
+        help="Path to the folder containing unzipped artifacts",
+    )
     args = parser.parse_args()
 
     graphs = load_graphs(args.artifact_folder)
     headers, table_data = query_and_build_table(graphs)
     assert ensure_provenance_data(args.artifact_folder, headers, table_data)
-    plot_element_size_vs_stress(headers, table_data, output_file="element_size_vs_stress.pdf")
+    plot_element_size_vs_stress(
+        headers,
+        table_data,
+        output_file=f"{PARAM_ELEMENT_SIZE}_vs_{METRIC_MAX_MISES_NODES}.pdf",
+    )
