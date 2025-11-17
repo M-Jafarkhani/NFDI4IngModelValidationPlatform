@@ -106,4 +106,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: element-size-vs-stress-plot
-          path: "$PROVENANACE_FILE_NAME"
+          path: ${{ env.PROVENANACE_FILE_NAME }}
