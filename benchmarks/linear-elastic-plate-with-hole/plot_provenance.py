@@ -304,5 +304,5 @@ if __name__ == "__main__":
     plot_element_size_vs_stress(
         headers,
         table_data,
-        output_file=f"{args.output_file}",
+        output_file=args.output_file,
     )
