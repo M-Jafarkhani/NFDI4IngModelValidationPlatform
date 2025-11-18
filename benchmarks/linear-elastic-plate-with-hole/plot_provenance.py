@@ -48,17 +48,14 @@ def query_and_build_table(graph_list):
         f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")' for tool in tools
     )
     query = f"""
-    PREFIX cr: <http://mlcommons.org/croissant/>
-    PREFIX sio: <http://semanticscience.org/resource/>
-
     SELECT DISTINCT ?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name
     WHERE {{
-      ?processing_step a schema:Action ;
+      ?method a m4i:Method ;
             m4i:hasParameter ?element_size ;
             m4i:hasParameter ?element_order ;
             m4i:hasParameter ?element_degree ;
             m4i:investigates ?max_von_mises_stress_gauss_points ;
-            schema:instrument ?tool .
+            ssn:implementedBy ?tool .
     
       ?max_von_mises_stress_gauss_points a schema:PropertyValue ;
             rdfs:label "max_von_mises_stress_nodes" ;
