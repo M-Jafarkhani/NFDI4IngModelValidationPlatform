@@ -100,7 +100,7 @@ jobs:
         shell: bash -l {0}
         run: |
           python benchmarks/linear-elastic-plate-with-hole/plot_provenance.py \
-            --artifact_folder "./$SNAKEMAKE_PROVENANCE_FILE" \
+            --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE" \
             --output_file $PROVENANACE_FILE_NAME
 
       - name: Upload provevance file as artifact
