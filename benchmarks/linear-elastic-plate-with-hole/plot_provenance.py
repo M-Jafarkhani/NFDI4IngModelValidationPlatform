@@ -4,7 +4,7 @@ from generate_config import workflow_config
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Process JSON-LD artifacts and display simulation results."
+        description="Process ro-crate-metadata.json artifacts and display simulation results."
     )
     parser.add_argument(
         "--provenance_folderpath",

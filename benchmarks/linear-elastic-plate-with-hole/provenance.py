@@ -7,7 +7,7 @@ from typing import List, Tuple, Dict
 
 class ProvenanceAnalyzer:
     """
-    A class to analyze and visualize provenance data from JSON-LD files.
+    A class to analyze and visualize provenance data from JSON-LD file.
     
     Attributes:
     """
