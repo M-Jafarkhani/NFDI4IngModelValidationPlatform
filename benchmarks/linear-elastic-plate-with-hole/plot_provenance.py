@@ -30,7 +30,6 @@ if __name__ == "__main__":
     
     tools = workflow_config["tools"]
     
-    # Create analyzer instance
     analyzer = ProvenanceAnalyzer(
         tools=tools,
         provenance_folderpath=args.provenance_folderpath,
