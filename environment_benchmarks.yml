@@ -10,5 +10,6 @@ dependencies:
   - conda-lock
   - conda
   - pip
+  - pandas
   - pip:
       - "git+https://github.com/izus-fokus/snakemake-report-plugin-metadata4ing@v1.1.0#egg=snakemake-report-plugin-metadata4ing"
