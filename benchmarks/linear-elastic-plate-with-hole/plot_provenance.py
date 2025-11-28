@@ -63,4 +63,5 @@ if __name__ == "__main__":
         y_axis_index=1,
         group_by_index=2,
         title="Element Size vs Max Von Mises Stress ",
+        output_file=args.output_file
     )
