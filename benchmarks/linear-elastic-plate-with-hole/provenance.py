@@ -347,7 +347,7 @@ class ProvenanceAnalyzer:
         return truth
 
     def extract_sparql_rows(
-        self, headers: List[str] = None, table_data: List[List] = None
+        self, headers: List[str], table_data: List[List]
     ) -> Dict[Tuple[str, float], float]:
         """
         Converts the raw SPARQL query results (`table_data`) into a normalized dictionary
@@ -355,8 +355,8 @@ class ProvenanceAnalyzer:
         match against `self.tools`.
 
         Args:
-            headers (List[str], optional): Optional headers list. If None, uses self.headers.
-            table_data (List[List], optional): Optional table data. If None, uses self.table_data.
+            headers (List[str], optional): Optional headers list. 
+            table_data (List[List], optional): Optional table data. 
 
         Returns:
             Dict[Tuple[str, float], float]: A dictionary mapping (normalized_tool, element_size)
@@ -470,7 +470,7 @@ class ProvenanceAnalyzer:
         query_str = self.generate_query_string()
 
         print("Querying and building table...")
-        # Run query and update self.headers, self.table_data
+        
         headers, table_data = self.run_query_on_graph(graph, query_str)
 
         print("Validating provenance...")
