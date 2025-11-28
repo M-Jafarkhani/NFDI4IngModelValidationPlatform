@@ -45,7 +45,7 @@ benchmark = "linear-elastic-plate-with-hole"
 workflow_config = {
     "configuration_to_parameter_file": configuration_to_parameter_file,
     "configurations": list(configurations.values()),
-    "tools": ["fenics"],
+    "tools": ["kratos"],
     "benchmark": benchmark
 }
 
