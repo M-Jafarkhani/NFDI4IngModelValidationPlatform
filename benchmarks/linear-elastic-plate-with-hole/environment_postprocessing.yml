@@ -11,3 +11,4 @@ dependencies:
   - pyvista
   - rdflib
   - matplotlib
+  - pandas
