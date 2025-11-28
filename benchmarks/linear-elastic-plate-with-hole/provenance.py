@@ -4,6 +4,7 @@ from rdflib import Graph
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from typing import List, Tuple, Dict
+import re
 
 
 class ProvenanceAnalyzer:
@@ -69,9 +70,7 @@ class ProvenanceAnalyzer:
             g = Graph()
             # The parse method handles file loading and format parsing
             g.parse(
-                os.path.join(
-                    self.provenance_folderpath, self.provenance_filename
-                ),
+                os.path.join(self.provenance_folderpath, self.provenance_filename),
                 format="json-ld",
             )
             return g
@@ -96,8 +95,7 @@ class ProvenanceAnalyzer:
         """
         # Build the SPARQL filter for tool names
         filter_conditions = " || ".join(
-            f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")'
-            for tool in self.tools
+            f'CONTAINS(LCASE(?tool_name), "{tool.lower()}")' for tool in self.tools
         )
 
         # Literal "1" handling based on whether a named graph is used
@@ -111,7 +109,9 @@ class ProvenanceAnalyzer:
         PREFIX ssn: <http://www.w3.org/ns/ssn/>
         """
 
-        SELECT_ELEMETS = f"?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name"
+        SELECT_ELEMETS = (
+            f"?value_element_size ?value_max_von_mises_stress_gauss_points ?tool_name"
+        )
 
         # Inner part of the query defining the required graph pattern
         INNER_QUERY = f"""
@@ -169,6 +169,87 @@ class ProvenanceAnalyzer:
 
         return QUERY_STR
 
+    def sanitize_variable_name(self, name: str) -> str:
+        """
+        Convert a string into a valid SPARQL variable name.
+        Replaces invalid characters with underscores.
+        """
+        # Replace invalid chars with underscore
+        var = re.sub(r"[^a-zA-Z0-9_]", "_", name)
+        # Ensure it doesn't start with a digit
+        if re.match(r"^\d", var):
+            var = "_" + var
+        return var
+
+    def build_dynamic_query(self, parameters, metrics, tools=None, named_graph=None):
+        """
+        Generate a SPARQL query for all m4i:Method instances with given parameters and metrics.
+        Parameters and metrics are mandatory; optional filtering by tool names.
+        Optionally, the query can target a specific named graph.
+        """
+
+        all_names = parameters + metrics
+        # Map original names to safe SPARQL variable names
+        var_map = {name: self.sanitize_variable_name(name) for name in all_names}
+
+        # Build SELECT variables
+        select_vars = " ".join(f"?value_{var_map[name]}" for name in all_names)
+
+        # Build method→parameter and method→metric links
+        method_links = (
+            "\n    ".join(
+                f"?method m4i:hasParameter ?{var_map[p]} ." for p in parameters
+            )
+            + "\n"
+            + "\n    ".join(
+                f"?method m4i:investigates ?{var_map[m]} ." for m in metrics
+            )
+        )
+
+        # Build parameter and metric blocks
+        value_blocks = "\n".join(
+            f'?{var_map[name]} a schema:PropertyValue ;\n rdfs:label "{name}" ;\n schema:value ?value_{var_map[name]} .\n'
+            for name in all_names
+        )
+
+        # Tool block with optional filter
+        tool_block = "?method ssn:implementedBy ?tool .\n?tool a schema:SoftwareApplication ;\n rdfs:label ?tool_name .\n"
+        if tools:
+            filter_cond = " || ".join(
+                f'CONTAINS(LCASE(?tool_name), "{t.lower()}")' for t in tools
+            )
+            tool_block += f"\nFILTER({filter_cond}) .\n"
+
+        # Build the inner query
+        inner_query = f"""
+        ?method a m4i:Method .
+        {method_links}
+        {value_blocks}
+        {tool_block}
+        """.strip()
+
+        # Wrap in GRAPH if named_graph is provided
+        where_block = (
+            f"GRAPH <{named_graph}> {{\n{inner_query}\n}}"
+            if named_graph
+            else inner_query
+        )
+
+        # Final query
+        query = f"""
+        PREFIX schema: <http://schema.org/>
+        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        PREFIX m4i: <http://w3id.org/nfdi4ing/metadata4ing#>
+        PREFIX ssn: <http://www.w3.org/ns/ssn/>
+    
+        SELECT ?method {select_vars} ?tool_name
+        WHERE {{
+            {where_block}
+        }}
+        """.strip()
+
+        return query
+
     def run_query_on_graph(
         self, graph: Graph, query: str
     ) -> Tuple[List[str], List[List]]:
@@ -185,55 +266,22 @@ class ProvenanceAnalyzer:
         Raises:
             AssertionError: If the query returns no rows.
         """
+        return graph.query(query)
 
-        headers = [
-            self.PARAM_ELEMENT_SIZE,
-            self.METRIC_MAX_MISES_NODES,
-            self.COL_TOOL_NAME,
-        ]
-        table_data = []
-
-        # Execute the query
-        results = graph.query(query)
-
-        for row in results:
-            # Access results by variable name from SELECT statement
-            value_element_size = row.value_element_size
-            value_max_von_mises_stress_gauss_points = (
-                row.value_max_von_mises_stress_gauss_points
-            )
-            tool_name = row.tool_name
-            table_data.append(
-                [
-                    value_element_size,
-                    value_max_von_mises_stress_gauss_points,
-                    tool_name,
-                ]
-            )
-
-        # Sort by element-size (the X-axis for plotting)
-        sort_key = headers.index(self.PARAM_ELEMENT_SIZE)
-        table_data.sort(
-            key=lambda x: float(x[sort_key])
-        )  # Ensure sorting by numerical value
-
-        assert (
-            len(table_data) > 0
-        ), "No rows returned from SPARQL query — table_data is empty."
-
-        return headers, table_data
-
-    def plot_element_size_vs_stress(
+    def plot_provenance_graph(
         self,
+        data: List[List],
+        x_axis_label: str,
+        y_axis_label: str,
+        x_axis_index: str,
+        y_axis_index: str,
+        group_by_index: str,
+        title: str,
         output_file: str = None,
-        headers: List[str] = None,
-        table_data: List[List] = None,
         figsize: Tuple[int, int] = (12, 5),
     ):
         """
-        Generates a scatter/line plot of the extracted data: element-size (log scale)
-        vs. max Von Mises stress at nodes, grouped by the simulation tool. The plot
-        is saved as a PDF or displayed.
+        Generates a scatter/line plot of the extracted data.
 
         Args:
             output_file (str, optional): Path where the PDF plot will be saved. If None, the plot is shown.
@@ -241,37 +289,29 @@ class ProvenanceAnalyzer:
             table_data (List[List], optional): Table data to use.
             figsize (Tuple[int, int], optional): Dimensions of the output figure. Defaults to (12, 5).
         """
-        idx_element_size = headers.index(self.PARAM_ELEMENT_SIZE)
-        idx_stress = headers.index(self.METRIC_MAX_MISES_NODES)
-        idx_tool = headers.index(self.COL_TOOL_NAME)
 
         grouped_data = defaultdict(list)
         x_tick_set = set()
 
-        for row in table_data:
-            tool = row[idx_tool]
-            x = float(row[idx_element_size])
-            y = float(row[idx_stress])
-            grouped_data[tool].append((x, y))
+        for row in data:
+            x = float(row[x_axis_index])
+            y = float(row[y_axis_index])
+            grouped_data[row[group_by_index]].append((x, y))
             x_tick_set.add(x)
 
         # Sort x-tick labels
         x_ticks = sorted(x_tick_set)
 
         plt.figure(figsize=figsize)
-        for tool, values in grouped_data.items():
+        for grouped_title, values in grouped_data.items():
             # Sort values by x-axis (element size) to ensure correct line plotting
             values.sort()
             x_vals, y_vals = zip(*values)
-            plt.plot(x_vals, y_vals, marker="o", linestyle="-", label=tool)
+            plt.plot(x_vals, y_vals, marker="o", linestyle="-", label=grouped_title)
 
-        plt.xlabel(self.PARAM_ELEMENT_SIZE)
-        plt.ylabel(self.METRIC_MAX_MISES_NODES)
-        plt.title(
-            f"{self.PARAM_ELEMENT_SIZE} vs {self.METRIC_MAX_MISES_NODES} by Tool\n"
-            f"(element-order = 1 , element-degree = 1)"
-        )
-        plt.legend(title=self.COL_TOOL_NAME)
+        plt.xlabel(x_axis_label)
+        plt.ylabel(y_axis_label)
+        plt.title(title)
         plt.grid(True)
 
         # Use logarithmic scale for x-axis
@@ -355,8 +395,8 @@ class ProvenanceAnalyzer:
         match against `self.tools`.
 
         Args:
-            headers (List[str], optional): Optional headers list. 
-            table_data (List[List], optional): Optional table data. 
+            headers (List[str], optional): Optional headers list.
+            table_data (List[List], optional): Optional table data.
 
         Returns:
             Dict[Tuple[str, float], float]: A dictionary mapping (normalized_tool, element_size)
@@ -470,7 +510,7 @@ class ProvenanceAnalyzer:
         query_str = self.generate_query_string()
 
         print("Querying and building table...")
-        
+
         headers, table_data = self.run_query_on_graph(graph, query_str)
 
         print("Validating provenance...")
