@@ -47,15 +47,15 @@ def sparql_result_to_dataframe(results):
 
 def apply_custom_filters(data: pd.DataFrame) -> pd.DataFrame:
     """
-    Filter rows in a pandas DataFrame and return a list of lists
-    with element_size, max_von_mises_stress_nodes, and tool_name.
+    Filters rows where element_degree = 1 and element_order = 1,
+    and returns the DataFrame with those two columns removed.
     """
-
     filtered_df = data[(data["element_degree"] == 1) & (data["element_order"] == 1)]
 
-    return filtered_df[
-        ["element_size", "max_von_mises_stress_nodes", "tool_name"]
-    ].reset_index(drop=True)
+    # Drop only the two columns
+    return filtered_df.drop(columns=["element_degree", "element_order"]).reset_index(
+        drop=True
+    )
 
 
 def summary_file_to_dataframe(summary_path, parameters, metrics):
@@ -135,45 +135,45 @@ def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame):
     return False
 
 
-def main():
-    args = parse_args()
-
-    parameters = ["element_size", "element_order", "element_degree"]
-    metrics = ["max_von_mises_stress_nodes"]
-    tools = workflow_config["tools"]
-
-    analyzer = ProvenanceAnalyzer(
-        provenance_folderpath=args.provenance_folderpath,
-        provenance_filename=args.provenance_filename,
-    )
-
+def load_and_query_graph(analyzer, parameters, metrics, tools):
+    """Loads graph and runs dynamic query."""
     graph = analyzer.load_graph_from_file()
     query = analyzer.build_dynamic_query(parameters, metrics, tools)
     results = analyzer.run_query_on_graph(graph, query)
 
     provenance_df = sparql_result_to_dataframe(results)
-
     assert len(provenance_df), "No data found for the provenance query."
 
+    return provenance_df
+
+
+def validate_provenance_data(
+    provenance_df, parameters, metrics, tools, provenance_folderpath
+):
+    """Validates summary.json results against provenance query results."""
     for tool in tools:
         summary_path = os.path.join(
-            args.provenance_folderpath,
+            provenance_folderpath,
             "snakemake_results",
             "linear-elastic-plate-with-hole",
             tool,
             "summary.json",
         )
         summary_df = summary_file_to_dataframe(summary_path, parameters, metrics)
-        filtered_data_df = provenance_df[
+
+        # Filter provenance df for the tool
+        filtered_df = provenance_df[
             provenance_df["tool_name"].str.contains(tool, case=False, na=False)
-        ]
-        filtered_data_df = filtered_data_df.drop(columns=["tool_name"])
+        ].drop(columns=["tool_name"])
+
+        # Validate equality
         assert compare_dataframes(
-            summary_df, filtered_data_df
+            summary_df, filtered_df
         ), f"Data mismatch for tool '{tool}'. See above for details."
 
-    final_df = apply_custom_filters(provenance_df)
 
+def plot_results(analyzer, final_df, output_file):
+    """Plots provenance results."""
     analyzer.plot_provenance_graph(
         data=final_df.values.tolist(),
         x_axis_label="Element Size",
@@ -181,9 +181,43 @@ def main():
         x_axis_index=0,
         y_axis_index=1,
         group_by_index=2,
-        title="Element Size vs Max Von Mises Stress ",
-        output_file=args.output_file,
+        title="Element Size vs Max Von Mises Stress",
+        output_file=output_file,
     )
+
+
+def run(args, parameters, metrics, tools):
+    analyzer = ProvenanceAnalyzer(
+        provenance_folderpath=args.provenance_folderpath,
+        provenance_filename=args.provenance_filename,
+    )
+
+    # Step 1 — Load graph & run SPARQL
+    provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
+
+    # Step 2 — Validate results per tool
+    validate_provenance_data(
+        provenance_df, parameters, metrics, tools, args.provenance_folderpath
+    )
+
+    # Step 3 — Apply custom filters
+    final_df = apply_custom_filters(provenance_df)
+
+    # Step 4 — Plot final results
+    plot_results(analyzer, final_df, args.output_file)
+
+
+def main():
+    args = parse_args()
+
+    parameters = ["element_size", "element_order", "element_degree"]
+    metrics = ["max_von_mises_stress_nodes"]
+    tools = workflow_config["tools"]
+    
+    # metrics = ["max_von_mises_stress_gauss_points"]
+    # tools = ["fenics"]
+
+    run(args, parameters, metrics, tools)
 
 
 if __name__ == "__main__":
