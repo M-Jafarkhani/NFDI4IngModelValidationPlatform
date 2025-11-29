@@ -4,6 +4,7 @@ from snakemake_report_plugin_metadata4ing.interfaces import (
     ParameterExtractorInterface,
 )
 
+
 class ParameterExtractor(ParameterExtractorInterface):
     def extract_params(self, rule_name: str, file_path: str) -> dict:
         results = {}
@@ -18,19 +19,27 @@ class ParameterExtractor(ParameterExtractorInterface):
                 data = json.load(f)
             for key, val in data.items():
                 if isinstance(val, dict):
-                    results[rule_name]["has parameter"].append({key: {
-                        "value": val["value"],
-                        "unit": f"{val["unit"]}" if "unit" in val else None,
-                        "json-path": f"/{key}/value",
-                        "data-type": self._get_type(val["value"]),
-                    }})
+                    results[rule_name]["has parameter"].append(
+                        {
+                            key: {
+                                "value": val["value"],
+                                "unit": f"{val["unit"]}" if "unit" in val else None,
+                                "json-path": f"/{key}/value",
+                                "data-type": self._get_type(val["value"]),
+                            }
+                        }
+                    )
                 else:
-                    results[rule_name]["has parameter"].append({key: {
-                        "value": val,
-                        "unit": None,
-                        "json-path": f"/{key}",
-                        "data-type": self._get_type(val),
-                    }})
+                    results[rule_name]["has parameter"].append(
+                        {
+                            key: {
+                                "value": val,
+                                "unit": None,
+                                "json-path": f"/{key}",
+                                "data-type": self._get_type(val),
+                            }
+                        }
+                    )
         elif (
             file_name.startswith("solution_")
             and file_name.endswith(".json")
@@ -40,13 +49,20 @@ class ParameterExtractor(ParameterExtractorInterface):
             with open(file_path) as f:
                 data = json.load(f)
             for key, val in data.items():
-                if key == "max_von_mises_stress_nodes":
-                    results[rule_name]["investigates"].append({key: {
-                        "value": val,
-                        "unit": None,
-                        "json-path": f"/{key}",
-                        "data-type": "schema:Float",
-                    }})
+                if (
+                    key == "max_von_mises_stress_nodes"
+                    or key == "max_von_mises_stress_gauss_points"
+                ):
+                    results[rule_name]["investigates"].append(
+                        {
+                            key: {
+                                "value": val,
+                                "unit": None,
+                                "json-path": f"/{key}",
+                                "data-type": "schema:Float",
+                            }
+                        }
+                    )
         return results
 
     def _get_type(self, val):
