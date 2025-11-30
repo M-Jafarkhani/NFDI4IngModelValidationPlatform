@@ -207,8 +207,7 @@ class ProvenanceAnalyzer:
         plt.ylabel(y_axis_label)
         plt.title(title)
         plt.grid(True)
-
-        # Use logarithmic scale for x-axis
+        plt.legend()
         plt.xscale("log")
 
         # Set x-ticks to show original values
