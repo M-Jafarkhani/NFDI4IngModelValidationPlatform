@@ -223,7 +223,7 @@ class ProvenanceAnalyzer:
 
     def validate_provevance(self): 
         settings = services.ValidationSettings(
-            rocrate_uri=os.path.join(self.provenance_folderpath, self.provenance_filename),
+            rocrate_uri=self.provenance_folderpath,
             profile_identifier='ro-crate-1.1',
             requirement_severity=models.Severity.REQUIRED,
         )
