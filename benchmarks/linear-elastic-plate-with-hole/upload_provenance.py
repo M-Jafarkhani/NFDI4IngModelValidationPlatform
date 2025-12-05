@@ -46,7 +46,7 @@ def run(args):
     try:
         upload_result = rohub.ros_upload(path_to_zip=args.provenance_folderpath)
         identifier = upload_result["identifier"]
-    except KeyError as error:
+    except Exception as error:
         print(f"Error on Upload RoHub: {error}")
         exit(1)
 
