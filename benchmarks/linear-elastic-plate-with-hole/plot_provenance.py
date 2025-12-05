@@ -52,7 +52,6 @@ def apply_custom_filters(data: pd.DataFrame) -> pd.DataFrame:
     """
     filtered_df = data[(data["element_degree"] == 1) & (data["element_order"] == 1)]
 
-    # Drop only the two columns
     return filtered_df.drop(columns=["element_degree", "element_order"]).reset_index(
         drop=True
     )
@@ -100,7 +99,6 @@ def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame):
 
     Returns True if DataFrames are identical, False otherwise.
     """
-    # Sort columns and rows to make comparison order-independent
     cols1 = sorted(df1.columns)
     cols2 = sorted(df2.columns)
 
@@ -110,18 +108,15 @@ def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame):
     df1_sorted = df1[cols1].sort_values(by=cols1).reset_index(drop=True)
     df2_sorted = df2[cols2].sort_values(by=cols2).reset_index(drop=True)
 
-    # Check equality
     are_equal = df1_sorted.equals(df2_sorted)
 
     if are_equal:
         return True
 
-    # Find rows in df1 but not in df2
     missing_in_df2 = pd.concat([df1_sorted, df2_sorted, df2_sorted]).drop_duplicates(
         keep=False
     )
 
-    # Find rows in df2 but not in df1
     missing_in_df1 = pd.concat([df2_sorted, df1_sorted, df1_sorted]).drop_duplicates(
         keep=False
     )
@@ -140,7 +135,7 @@ def load_and_query_graph(analyzer, parameters, metrics, tools):
     graph = analyzer.load_graph_from_file()
     query = analyzer.build_dynamic_query(parameters, metrics, tools)
     results = analyzer.run_query_on_graph(graph, query)
-
+    
     provenance_df = sparql_result_to_dataframe(results)
     assert len(provenance_df), "No data found for the provenance query."
 
@@ -161,12 +156,10 @@ def validate_provenance_data(
         )
         summary_df = summary_file_to_dataframe(summary_path, parameters, metrics)
 
-        # Filter provenance df for the tool
         filtered_df = provenance_df[
             provenance_df["tool_name"].str.contains(tool, case=False, na=False)
         ].drop(columns=["tool_name"])
 
-        # Validate equality
         assert compare_dataframes(
             summary_df, filtered_df
         ), f"Data mismatch for tool '{tool}'. See above for details."
@@ -191,19 +184,17 @@ def run(args, parameters, metrics, tools):
         provenance_folderpath=args.provenance_folderpath,
         provenance_filename=args.provenance_filename,
     )
+    
+    analyzer.validate_provevance()
 
-    # Step 1 — Load graph & run SPARQL
     provenance_df = load_and_query_graph(analyzer, parameters, metrics, tools)
 
-    # Step 2 — Validate results per tool
     validate_provenance_data(
         provenance_df, parameters, metrics, tools, args.provenance_folderpath
     )
 
-    # Step 3 — Apply custom filters
     final_df = apply_custom_filters(provenance_df)
 
-    # Step 4 — Plot final results
     plot_results(analyzer, final_df, args.output_file)
 
 
@@ -213,9 +204,6 @@ def main():
     parameters = ["element_size", "element_order", "element_degree"]
     metrics = ["max_von_mises_stress_nodes"]
     tools = workflow_config["tools"]
-    
-    # metrics = ["max_von_mises_stress_gauss_points"]
-    # tools = ["fenics"]
 
     run(args, parameters, metrics, tools)
 

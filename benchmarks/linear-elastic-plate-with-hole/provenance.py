@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from typing import List, Tuple
 import re
-
+from rocrate_validator import services, models
 
 class ProvenanceAnalyzer:
     """
@@ -219,3 +219,24 @@ class ProvenanceAnalyzer:
             print(f"Plot saved to: {output_file}")
         else:
             plt.show()
+
+
+    def validate_provevance(self): 
+        settings = services.ValidationSettings(
+            rocrate_uri=os.path.join(self.provenance_folderpath, self.provenance_filename),
+            profile_identifier='ro-crate-1.1',
+            requirement_severity=models.Severity.REQUIRED,
+        )
+
+        result = services.validate(settings)
+
+        assert not result.has_issues(), (
+            "RO-Crate is invalid!\n" +
+            "\n".join(
+                f"Detected issue of severity {issue.severity.name} with check "
+                f'"{issue.check.identifier}": {issue.message}'
+                for issue in result.get_issues()
+            )
+        )
+
+        print("RO-Crate is valid!")
