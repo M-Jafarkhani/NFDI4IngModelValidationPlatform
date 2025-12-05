@@ -29,7 +29,7 @@ def parse_args():
 
 
 def run(args):
-    rohub.settings.SLEEP_TIME = 200
+    rohub.settings.SLEEP_TIME = 10
     
     USE_DEVELOPMENT_VERSION = True
     if USE_DEVELOPMENT_VERSION:
@@ -52,10 +52,11 @@ def run(args):
         print(f"Error on Deleteing RoHub: {error}")
 
     identifier = ""
-
+    uuid = ""
     try:
         upload_result = rohub.ros_upload(path_to_zip=args.provenance_folderpath)
         identifier = upload_result["identifier"]
+        uuid = upload_result["results"].rstrip("/").split("/")[-1]
     except Exception as error:
         print(f"Error on Upload RoHub: {error}")
 
@@ -80,14 +81,13 @@ def run(args):
     ANNOTATION_PREDICATE = "http://w3id.org/nfdi4ing/metadata4ing#investigates"
     ANNOTATION_OBJECT = "https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/tree/main/benchmarks/linear-elastic-plate-with-hole"
 
-    _RO = rohub.ros_load(identifier)
-    annotation_json = [{"property": ANNOTATION_PREDICATE, "value": ANNOTATION_OBJECT}]
-    add_annotations_result = _RO.add_annotations(
-        body_specification_json=annotation_json
-    )
-
-    print(add_annotations_result)
-
+    if (uuid != ""):
+        _RO = rohub.ros_load(uuid)
+        annotation_json = [{"property": ANNOTATION_PREDICATE, "value": ANNOTATION_OBJECT}]
+        add_annotations_result = _RO.add_annotations(
+            body_specification_json=annotation_json
+        )
+        print(add_annotations_result)
 
 def main():
     args = parse_args()
