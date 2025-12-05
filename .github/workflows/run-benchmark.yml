@@ -108,12 +108,17 @@ jobs:
         with:
           name: element-size-vs-stress-plot
           path: ${{ env.PROVENANACE_FILE_NAME }}
+      
+      - name: Unzip inner provenance zip
+        run: |
+          inner_zip="./$SNAKEMAKE_PROVENANCE_FILE/$SNAKEMAKE_PROVENANCE_FILE.zip"
+          unzip -o "$inner_zip" -d "./$SNAKEMAKE_PROVENANCE_FILE/extracted"
 
       - name: Upload RoCrate Zip file onto RoHub
         shell: bash -l {0}
         run: |
           python benchmarks/linear-elastic-plate-with-hole/upload_provenance.py \
-            --provenance_folderpath ./artifact_files/$SNAKEMAKE_PROVENANCE_FILE.zip \
+            --provenance_folderpath "./$SNAKEMAKE_PROVENANCE_FILE/extracted" \
             --username "${{ secrets.ROHUB_USERNAME }}" \
             --password "${{ secrets.ROHUB_PASSWORD }}"
         

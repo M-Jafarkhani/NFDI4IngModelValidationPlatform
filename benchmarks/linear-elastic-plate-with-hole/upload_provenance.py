@@ -2,6 +2,7 @@ import argparse
 import rohub
 import time
 
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Process ro-crate-metadata.json artifacts and display simulation results."
@@ -28,8 +29,9 @@ def parse_args():
 
 
 def run(args):
+    rohub.settings.SLEEP_TIME = 200
+    
     USE_DEVELOPMENT_VERSION = True
-
     if USE_DEVELOPMENT_VERSION:
         rohub.settings.API_URL = "https://rohub2020-rohub.apps.paas-dev.psnc.pl/api/"
         rohub.settings.KEYCLOAK_CLIENT_ID = "rohub2020-cli"
@@ -40,6 +42,14 @@ def run(args):
         )
 
     rohub.login(args.username, args.password)
+    
+    my_ros = rohub.list_my_ros()
+
+    try:
+        for _, row in my_ros.iterrows():
+            rohub.ros_delete(row["identifier"])
+    except Exception as error:
+        print(f"Error on Deleteing RoHub: {error}")
 
     identifier = ""
 
@@ -48,9 +58,8 @@ def run(args):
         identifier = upload_result["identifier"]
     except Exception as error:
         print(f"Error on Upload RoHub: {error}")
-        exit(1)
 
-    timeout_seconds = 5 * 60 
+    timeout_seconds = 5 * 60
     poll_interval = 10
     start_time = time.time()
 
@@ -67,6 +76,18 @@ def run(args):
         else:
             print(f"Current status: {status}, waiting {poll_interval}s...")
             time.sleep(poll_interval)
+
+    ANNOTATION_PREDICATE = "http://w3id.org/nfdi4ing/metadata4ing#investigates"
+    ANNOTATION_OBJECT = "https://github.com/BAMresearch/NFDI4IngModelValidationPlatform/tree/main/benchmarks/linear-elastic-plate-with-hole"
+
+    _RO = rohub.ros_load(identifier)
+    annotation_json = [{"property": ANNOTATION_PREDICATE, "value": ANNOTATION_OBJECT}]
+    add_annotations_result = _RO.add_annotations(
+        body_specification_json=annotation_json
+    )
+
+    print(add_annotations_result)
+
 
 def main():
     args = parse_args()
