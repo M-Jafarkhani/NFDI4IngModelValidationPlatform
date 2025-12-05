@@ -1,6 +1,6 @@
 import argparse
 import rohub
-
+import time
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -41,9 +41,32 @@ def run(args):
 
     rohub.login(args.username, args.password)
 
-    upload_result = rohub.ros_upload(path_to_zip=args.provenance_folderpath)
+    identifier = ""
 
-    print(upload_result)
+    try:
+        upload_result = rohub.ros_upload(path_to_zip=args.provenance_folderpath)
+        identifier = upload_result["identifier"]
+    except KeyError as error:
+        print(f"Error on Upload RoHub: {error}")
+        exit(1)
+
+    timeout_seconds = 5 * 60 
+    poll_interval = 10
+    start_time = time.time()
+
+    while True:
+        success_result = rohub.is_job_success(job_id=identifier)
+        status = success_result.get("status", "UNKNOWN")
+
+        if status == "SUCCESS":
+            print(f"Upload successful: {success_result}")
+            break
+        elif time.time() - start_time > timeout_seconds:
+            print(f"Upload did not succeed within 5 minutes. Last status: {status}")
+            break
+        else:
+            print(f"Current status: {status}, waiting {poll_interval}s...")
+            time.sleep(poll_interval)
 
 def main():
     args = parse_args()
